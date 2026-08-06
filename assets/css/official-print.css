@@ -1,0 +1,290 @@
+/**
+ * Official RHU Magallanes / PhilHealth — fixed paper print templates.
+ *
+ * Chrome-safe: ONE .print-page per preview document.
+ * Do NOT stack multiple fixed-height A4 sheets in one iframe (causes STATUS_BREAKPOINT).
+ */
+
+/* —— Screen preview —— */
+.it-preview-body {
+    background: #cbd5e1;
+    margin: 0;
+}
+
+.it-preview-pages {
+    padding: 1rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.print-page {
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.16);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.print-page--a4 {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 8mm 10mm;
+}
+
+.print-page--legal {
+    width: 8.5in;
+    min-height: 14in;
+    padding: 0.35in 0.45in;
+}
+
+.print-page--landscape-half {
+    width: 297mm;
+    min-height: 210mm;
+    padding: 6mm;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 4mm;
+}
+
+.print-page .paper-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border: 1px solid #000;
+    box-sizing: border-box;
+}
+
+.print-page .paper-sheet-inner {
+    box-sizing: border-box;
+}
+
+.print-page--landscape-half .it-print-half {
+    flex: 1 1 50%;
+    max-width: calc(50% - 2mm);
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.print-page--landscape-half .it-print-half--left {
+    border-right: 1px dashed #94a3b8;
+    padding-right: 2mm;
+}
+
+.print-page--landscape-half .it-print-half--right {
+    padding-left: 2mm;
+}
+
+.print-page--landscape-half .paper-sheet {
+    height: 100%;
+}
+
+/* —— @page —— */
+@page {
+    margin: 0;
+}
+
+@page a4-portrait-sheet {
+    size: A4 portrait;
+    margin: 0;
+}
+
+@page legal-portrait-sheet {
+    size: legal portrait;
+    margin: 0;
+}
+
+@page a4-landscape-sheet {
+    size: A4 landscape;
+    margin: 0;
+}
+
+@media print {
+    html,
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        zoom: 1 !important;
+    }
+
+    .no-print,
+    .it-preview-chrome,
+    .it-folder-toolbar,
+    .it-folder-nav,
+    .it-print-panel,
+    .it-layout-test-banner,
+    .modal,
+    .wizard-sidebar,
+    .wizard-toolbar,
+    .wizard-footer,
+    .sidebar,
+    .topbar {
+        display: none !important;
+    }
+
+    .it-preview-body,
+    .it-preview-pages {
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        width: auto !important;
+        display: block !important;
+        gap: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .it-layout--a4-portrait,
+    .it-layout--a4-duplex {
+        page: a4-portrait-sheet;
+    }
+
+    .it-layout--legal-portrait {
+        page: legal-portrait-sheet;
+    }
+
+    .it-layout--a4-landscape-half {
+        page: a4-landscape-sheet;
+    }
+
+    /* One sheet — keep the whole form together (container level only) */
+    .print-page {
+        box-shadow: none !important;
+        background: #fff !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid-page !important;
+        overflow: visible !important;
+    }
+
+    .print-page--a4 {
+        width: 210mm !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        height: auto !important;
+        padding: 8mm 10mm !important;
+    }
+
+    .print-page--legal {
+        width: 8.5in !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        height: auto !important;
+        padding: 0.35in 0.45in !important;
+    }
+
+    .print-page--landscape-half {
+        width: 297mm !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        height: auto !important;
+        padding: 6mm !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        gap: 4mm !important;
+    }
+
+    .print-page .paper-sheet,
+    .print-page .form-container,
+    .print-page .pf-section-bar,
+    .print-page .pf-bordered-box,
+    .print-page .pf-doh-header,
+    .print-page .pf-sig-line,
+    .print-page table.pf-table {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .print-page .paper-sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+        zoom: 1 !important;
+    }
+
+    .print-page .paper-sheet-inner {
+        padding: 4px 6px 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    .print-page--landscape-half .it-print-half {
+        flex: 1 1 50% !important;
+        max-width: calc(50% - 2mm) !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Compact enough for one sheet — keep paper look */
+    .print-page .paper-sheet {
+        font-size: 8pt !important;
+        line-height: 1.2 !important;
+    }
+
+    .print-page .pf-title-main {
+        font-size: 10pt !important;
+        margin: 2px 0 !important;
+    }
+
+    .print-page .pf-section-bar {
+        margin: 4px 0 3px !important;
+        padding: 2px 6px !important;
+        font-size: 7.5pt !important;
+    }
+
+    .print-page .pf-field-row {
+        margin-bottom: 3px !important;
+    }
+
+    .print-page .pf-table td,
+    .print-page .pf-table th {
+        padding: 1px 3px !important;
+    }
+
+    .print-page .pf-instructions {
+        margin-bottom: 4px !important;
+        font-size: 7pt !important;
+        line-height: 1.25 !important;
+    }
+
+    .print-page .pf-area {
+        min-height: 28px !important;
+        resize: none !important;
+    }
+
+    .print-page .pf-line,
+    .print-page .pf-select,
+    .print-page .pf-area {
+        background: transparent !important;
+        border-bottom-color: #000 !important;
+        color: #000 !important;
+        padding: 1px 2px !important;
+    }
+
+    .print-page .pf-line::placeholder,
+    .print-page .pf-area::placeholder {
+        color: transparent !important;
+        opacity: 0 !important;
+    }
+
+    .print-page .pf-two-col,
+    .print-page .pf-split-2,
+    .print-page .pf-check-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}

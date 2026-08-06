@@ -1,0 +1,534 @@
+/* Official paper form appearance — digital fillable DOH/PhilHealth forms */
+
+.paper-sheet {
+    background: #fff;
+    border: 2px solid #000;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9pt;
+    color: #000;
+    line-height: 1.35;
+    max-width: 210mm;
+    margin: 0 auto;
+}
+
+.paper-sheet-inner {
+    padding: 8px 10px 12px;
+}
+
+/* Inputs — underline style like paper */
+.pf-line,
+.pf-select,
+.pf-area {
+    border: none;
+    border-bottom: 1px solid #000;
+    border-radius: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    color: #000;
+    padding: 2px 4px;
+    width: 100%;
+    box-shadow: none;
+}
+
+.pf-line::placeholder,
+.pf-area::placeholder {
+    color: #6b7280;
+    font-style: italic;
+    font-size: 7.5pt;
+    opacity: 1;
+}
+
+.pf-line:focus::placeholder,
+.pf-area:focus::placeholder {
+    color: #9ca3af;
+}
+
+.pf-line:focus,
+.pf-select:focus,
+.pf-area:focus {
+    outline: none;
+    border-bottom-color: #1a6fc4;
+    background: #f8fbff;
+}
+
+.pf-line:disabled,
+.pf-select:disabled,
+.pf-area:disabled,
+.pf-check input:disabled,
+.pf-radio input:disabled {
+    background: #f5f5f5 !important;
+    color: #555;
+    cursor: not-allowed;
+}
+
+.pf-area {
+    border: 1px solid #000;
+    resize: vertical;
+    min-height: 48px;
+}
+
+.pf-select {
+    border: 1px solid #999;
+    padding: 2px;
+}
+
+/* Magallanes address — same paper input look; no free-text street */
+.pf-magallanes-address {
+    margin: 0;
+}
+
+.pf-magallanes-address .pf-select,
+.pf-magallanes-address .pf-line,
+.pf-magallanes-address .pf-area {
+    width: 100%;
+}
+
+/* Patient profile auto-sync — shared identity across all forms */
+.pf-profile-field.pf-profile-filled:not(:focus) {
+    background: #f0f7ff;
+}
+
+.pf-profile-field.pf-profile-computed:not(:focus) {
+    background: #f8fafc;
+}
+
+.pf-profile-field.pf-profile-readonly,
+input[data-profile-field="patient_id"] {
+    background: #f3f4f6 !important;
+    color: #374151;
+    cursor: default;
+}
+
+.profile-sync-hint {
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+@media print {
+    .pf-profile-field,
+    .pf-profile-field.pf-profile-filled,
+    .pf-profile-field.pf-profile-computed {
+        background: transparent !important;
+    }
+
+    .profile-sync-hint {
+        display: none !important;
+    }
+}
+
+/* Section headers — light blue bar */
+.pf-section-bar {
+    background: #b8cce4;
+    color: #000;
+    font-weight: bold;
+    font-size: 8.5pt;
+    padding: 4px 8px;
+    margin: 8px 0 6px;
+    border: 1px solid #000;
+    text-transform: uppercase;
+}
+
+.pf-title-main {
+    text-align: center;
+    font-weight: bold;
+    font-size: 13pt;
+    margin: 4px 0;
+    letter-spacing: 0.02em;
+}
+
+.pf-title-sub {
+    text-align: center;
+    font-size: 8pt;
+    margin-bottom: 6px;
+}
+
+.pf-instructions {
+    font-size: 7.5pt;
+    font-style: italic;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.pf-instructions ol {
+    margin: 4px 0 0 1.2rem;
+    padding: 0;
+}
+
+/* Grid tables */
+.pf-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+}
+
+.pf-table td,
+.pf-table th {
+    border: 1px solid #000;
+    padding: 3px 5px;
+    vertical-align: top;
+}
+
+.pf-table th {
+    background: #b8cce4;
+    font-weight: bold;
+    font-size: 8pt;
+    text-align: left;
+}
+
+.ekas-services-table td,
+.ekas-services-table th {
+    padding: 2px 4px;
+    font-size: 7pt;
+    vertical-align: middle;
+}
+
+.ekas-services-table .pf-check span {
+    display: none;
+}
+
+.ekas-services-table .pf-line {
+    min-height: 18px;
+    font-size: 7pt;
+}
+
+.epress-rx-box {
+    border: 1.5px solid #000;
+    margin-top: 8px;
+    padding: 6px 8px 8px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+}
+
+.epress-rx-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 4px;
+    min-height: 28px;
+}
+
+.epress-rx-symbol {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 22pt;
+    font-weight: 700;
+    line-height: 1;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.epress-rx-title {
+    font-size: 9pt;
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+
+.epress-rx-body {
+    flex: 1;
+    min-height: 90px;
+}
+
+.epress-rx-body textarea.pf-area {
+    min-height: 90px;
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #94a3b8;
+    border-radius: 0;
+    background: transparent;
+    font-size: 8pt;
+    resize: vertical;
+}
+
+.epress-rx-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    align-items: flex-end;
+}
+
+.epress-rx-foot-left {
+    flex: 1;
+    font-size: 7.5pt;
+}
+
+.epress-rx-foot-right {
+    width: 46%;
+    text-align: right;
+    font-size: 7.5pt;
+}
+
+.epress-rx-foot-right .pf-line {
+    text-align: right;
+    font-weight: 700;
+    font-size: 8pt;
+}
+
+.pf-label {
+    font-size: 8pt;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 1px;
+}
+
+.pf-sublabel {
+    font-size: 7pt;
+    font-style: italic;
+    color: #333;
+    display: block;
+    text-align: center;
+    margin-top: 1px;
+}
+
+.pf-field-row {
+    margin-bottom: 6px;
+}
+
+.pf-inline {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pf-inline .pf-field {
+    flex: 1;
+    min-width: 80px;
+}
+
+/* Checkboxes & radios */
+.pf-check,
+.pf-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 8pt;
+    margin-right: 12px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.pf-check input,
+.pf-radio input {
+    width: 12px;
+    height: 12px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.pf-check-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 8px;
+    font-size: 8pt;
+}
+
+.pf-check-grid-1 {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Serial digit boxes */
+.pf-serial-boxes {
+    display: flex;
+    gap: 2px;
+}
+
+.pf-box {
+    width: 18px !important;
+    height: 20px;
+    border: 1px solid #000 !important;
+    text-align: center;
+    padding: 0 !important;
+    font-size: 9pt;
+}
+
+.pf-line.pf-short {
+    width: 80px;
+    display: inline-block;
+}
+
+.pf-line.pf-serial-single {
+    letter-spacing: 0.35em;
+    font-family: monospace;
+    max-width: 120px;
+}
+
+/* DOH header */
+.pf-doh-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #000;
+    padding-bottom: 6px;
+}
+
+.pf-doh-logo {
+    font-weight: bold;
+    font-size: 8pt;
+    line-height: 1.3;
+}
+
+.pf-doh-logo .small {
+    font-size: 7pt;
+    font-weight: normal;
+}
+
+/* Tear line */
+.pf-tear-line {
+    border-top: 2px dashed #000;
+    margin: 12px 0;
+    position: relative;
+    text-align: center;
+}
+
+.pf-tear-line::before {
+    content: '✂';
+    position: absolute;
+    left: 0;
+    top: -10px;
+    font-size: 10pt;
+}
+
+/* Consent two columns */
+.pf-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    border: 1px solid #000;
+    padding: 8px;
+    font-size: 7.5pt;
+    line-height: 1.45;
+}
+
+.pf-sig-line {
+    border-bottom: 1px solid #000;
+    height: 28px;
+    margin-top: 16px;
+}
+
+.pf-sig-label {
+    font-size: 7pt;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 2px;
+}
+
+.pf-form-footer {
+    text-align: right;
+    font-size: 7pt;
+    margin-top: 8px;
+    padding-top: 4px;
+}
+
+/* Form 3/4 split layout */
+.pf-split-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid #000;
+}
+
+.pf-split-2 > div {
+    padding: 8px;
+    border-right: 1px solid #000;
+}
+
+.pf-split-2 > div:last-child {
+    border-right: none;
+}
+
+.pf-section-title-center {
+    text-align: center;
+    font-weight: bold;
+    font-size: 9pt;
+    text-decoration: underline;
+    margin-bottom: 8px;
+}
+
+.pf-bordered-box {
+    border: 2px solid #000;
+    padding: 10px;
+    margin-top: 8px;
+}
+
+/* Review page stays readable */
+.paper-sheet.review-sheet {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    font-size: 0.875rem;
+}
+
+/* Wizard: paper forms in main area */
+.wizard-page-shell {
+    display: block;
+}
+
+.wizard-page-header-bar {
+    display: none;
+}
+
+.wizard-section-card {
+    display: none;
+}
+
+/* Print — structural only. Fixed paper metrics live in official-print.css */
+@media print {
+    .wizard-sidebar,
+    .wizard-toolbar,
+    .wizard-footer,
+    .sidebar,
+    .topbar {
+        display: none !important;
+    }
+
+    .paper-sheet {
+        border: 1px solid #000;
+        max-width: none;
+        box-shadow: none !important;
+    }
+
+    .pf-line, .pf-area {
+        border-bottom-color: #000;
+    }
+
+    .pf-line::placeholder,
+    .pf-area::placeholder,
+    .pf-select::placeholder {
+        color: transparent !important;
+        opacity: 0 !important;
+    }
+
+    /* Never collapse paper columns when printing */
+    .pf-two-col,
+    .pf-split-2 {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .pf-check-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .pf-area {
+        resize: none !important;
+    }
+}
+
+@media screen and (max-width: 767.98px) {
+    .pf-two-col,
+    .pf-split-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .pf-check-grid {
+        grid-template-columns: 1fr;
+    }
+}

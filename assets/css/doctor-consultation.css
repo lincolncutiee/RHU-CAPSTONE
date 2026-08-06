@@ -1,0 +1,315 @@
+/* Doctor — simplified consultation + FIFO queue form */
+
+.dc-page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 0 2rem;
+}
+
+.dc-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.dc-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+}
+
+.dc-back:hover { color: #1a6fc4; }
+
+.dc-header-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.dc-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.dc-subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    color: #64748b;
+    max-width: 36rem;
+}
+
+.dc-qnum-line {
+    margin-top: 0.2rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.dc-qnum-line strong {
+    color: #1a6fc4;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.dc-alert {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    color: #1e3a5f;
+    font-size: 0.875rem;
+}
+
+.dc-form { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.dc-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem 1.15rem 1.15rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.dc-section-title {
+    margin: 0 0 0.15rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #1a6fc4;
+}
+
+.dc-section-hint {
+    margin: 0 0 0.85rem;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.dc-grid { display: grid; gap: 0.75rem 1rem; }
+.dc-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dc-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.dc-field-span-2 { grid-column: span 2; }
+.dc-field label { font-size: 0.78rem; font-weight: 600; color: #334155; }
+
+.dc-readonly {
+    min-height: 38px;
+    padding: 0.45rem 0.7rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+}
+
+.dc-form .form-control {
+    border-radius: 8px;
+    border-color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.dc-bmi {
+    background: #f8fafc;
+    font-weight: 650;
+}
+
+.dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+    padding: 0.85rem 1rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    position: sticky;
+    bottom: 0.75rem;
+    z-index: 5;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.dc-save-status { font-size: 0.8125rem; color: #64748b; min-height: 1.25rem; }
+.dc-actions-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: auto; }
+.dc-field-span-3 { grid-column: span 3; }
+
+/* Clinical autocomplete (HIS / Bahmni-style typeahead) */
+.dc-ac {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.dc-ac-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 0;
+}
+
+.dc-ac-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.3rem 0.55rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    color: #1e3a5f;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.dc-ac-chip i { color: #1a6fc4; font-size: 0.85rem; }
+.dc-ac-chip span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dc-ac-chip-remove {
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 0.1rem;
+    cursor: pointer;
+}
+.dc-ac-chip-remove:hover { color: #b91c1c; }
+
+.dc-ac-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dc-ac-input-wrap > i {
+    position: absolute;
+    left: 0.75rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.dc-ac-input {
+    padding-left: 2.15rem !important;
+}
+
+.dc-ac-suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 2px);
+    z-index: 40;
+    margin: 0;
+    padding: 0.35rem;
+    list-style: none;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+}
+
+.dc-ac-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #0f172a;
+}
+
+.dc-ac-item i { color: #1a6fc4; flex-shrink: 0; }
+.dc-ac-item .dc-ac-label { flex: 1 1 auto; min-width: 0; }
+.dc-ac-item .dc-ac-meta {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.dc-ac-item:hover,
+.dc-ac-item.is-active {
+    background: #eff6ff;
+}
+
+.dc-ac-empty {
+    padding: 0.7rem 0.75rem;
+    color: #64748b;
+    font-size: 0.8125rem;
+}
+
+.dc-ac-dataset-msg {
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+/* Diagnosis clinical-notes textarea + typeahead */
+.dc-dx-notes {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dc-dx-notes textarea.form-control {
+    min-height: 5.5rem;
+    resize: vertical;
+    line-height: 1.45;
+}
+
+.dc-dx-notes .dc-dx-suggestions {
+    top: auto;
+    bottom: auto;
+    margin-top: 0;
+}
+
+.dc-dx-notes .dc-ac-item {
+    gap: 0;
+}
+
+.dc-dx-notes .dc-ac-item .dc-ac-label {
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .dc-grid-4 { grid-template-columns: 1fr 1fr; }
+    .dc-field-span-2,
+    .dc-field-span-3 { grid-column: span 2; }
+}
+
+@media (max-width: 520px) {
+    .dc-grid-4 { grid-template-columns: 1fr; }
+    .dc-field-span-2,
+    .dc-field-span-3 { grid-column: auto; }
+    .dc-actions { flex-direction: column; align-items: stretch; }
+    .dc-actions-btns { margin-left: 0; }
+}

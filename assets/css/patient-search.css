@@ -1,0 +1,239 @@
+/* Live patient search / autocomplete — global */
+
+.patient-search-widget {
+    position: relative;
+    width: 100%;
+}
+
+.patient-search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.patient-search-input-wrap > .bi-search {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--secondary);
+    font-size: 0.95rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.patient-search-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 2.25rem 0 2.35rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    background: #f8fafc;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.patient-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(26, 111, 196, 0.12);
+}
+
+.patient-search-input::placeholder {
+    color: #94a3b8;
+}
+
+.patient-search-clear {
+    position: absolute;
+    right: 0.35rem;
+    border: none;
+    background: transparent;
+    color: var(--secondary);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.patient-search-clear:hover {
+    background: var(--gray-200);
+    color: #334155;
+}
+
+.patient-search-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1050;
+    max-height: 360px;
+    overflow: hidden;
+    display: none;
+}
+
+.patient-search-dropdown.is-open {
+    display: block;
+}
+
+.patient-search-statusbar {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.6875rem;
+    color: var(--secondary);
+    border-bottom: 1px solid var(--gray-200);
+    background: #f8fafc;
+}
+
+.patient-search-results {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.patient-search-item {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.patient-search-item:hover,
+.patient-search-item.is-active {
+    background: var(--primary-50);
+}
+
+.patient-search-item-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.2rem;
+}
+
+.patient-search-item-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.3;
+}
+
+.patient-search-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--secondary);
+}
+
+.patient-search-item-meta span {
+    white-space: nowrap;
+}
+
+.ps-status-badge {
+    display: inline-block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ps-status-registered {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.ps-status-waiting {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.ps-status-consultation {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.ps-status-completed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.patient-search-empty,
+.patient-search-loading {
+    padding: 1rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--secondary);
+    text-align: center;
+}
+
+.patient-search-loading .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.35rem;
+}
+
+/* Topbar global search */
+.topbar-search {
+    flex: 1;
+    max-width: 420px;
+    min-width: 180px;
+}
+
+.topbar-search .patient-search-input {
+    height: 38px;
+    font-size: 0.8125rem;
+}
+
+/* Patient records page — wider search */
+.search-section .patient-search-widget {
+    flex: 1;
+}
+
+.search-section .search-row-live {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+}
+
+.search-section .search-row-live .patient-search-input {
+    height: 46px;
+    font-size: 0.9375rem;
+}
+
+@media (max-width: 991.98px) {
+    .topbar-search {
+        max-width: none;
+        order: 3;
+        flex-basis: 100%;
+        margin-top: 0.25rem;
+    }
+
+    .topbar {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: var(--topbar-height);
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .search-section .search-row-live {
+        flex-direction: column;
+    }
+}

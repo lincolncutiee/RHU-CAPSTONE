@@ -1,0 +1,933 @@
+/* IT Staff Printing Module */
+
+/* ---- Print Queue worklist (HIS) ---- */
+.pq-page {
+    --pq-blue: #1a6fc4;
+    --pq-ink: #0f172a;
+    --pq-mute: #64748b;
+    --pq-line: #e2e8f0;
+    --pq-bg: #f8fafc;
+
+    font-family: Inter, system-ui, sans-serif;
+    color: var(--pq-ink);
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding-bottom: 0.5rem;
+}
+
+.pq-page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pq-page-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--pq-ink);
+}
+
+.pq-page-sub {
+    font-size: 0.875rem;
+    color: var(--pq-mute);
+    margin-top: 0.15rem;
+}
+
+.pq-ready-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.pq-forms-count {
+    font-weight: 600;
+    color: #334155;
+}
+
+/* Consultation Date dropdown — clean RHU Magallanes style */
+.pq-consult-field {
+    min-width: 11.5rem;
+    max-width: 15rem;
+}
+
+.pq-consult-select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+}
+
+.pq-consult-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-height: 2.15rem;
+    padding: 0.4rem 1.85rem 0.4rem 0.7rem;
+    border: 1px solid var(--pq-line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--pq-ink);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pq-consult-select:hover {
+    border-color: #93c5fd;
+}
+
+.pq-consult-select:focus {
+    outline: none;
+    border-color: var(--pq-blue);
+    box-shadow: 0 0 0 3px rgba(26, 111, 196, 0.15);
+}
+
+.pq-consult-caret {
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--pq-mute);
+    font-size: 0.8rem;
+}
+
+.pq-btn-label {
+    margin-left: 0.15rem;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.pq-print-modal .modal-title {
+    font-weight: 700;
+}
+
+.pq-modal-patient {
+    margin-top: 0.15rem;
+}
+
+.pq-form-select-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.65rem;
+}
+
+.pq-form-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.pq-form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--pq-line);
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: pointer;
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--pq-ink);
+}
+
+.pq-form-check:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.pq-form-check input {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+.page-content:has(.pq-page),
+.main-content:has(.pq-page) {
+    background: var(--pq-bg);
+}
+
+.pq-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.65rem;
+    background: #fff;
+    border: 1px solid var(--pq-line);
+    border-radius: 10px;
+}
+
+.pq-search {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1 1 220px;
+    min-width: 180px;
+    height: 34px;
+    padding: 0 0.65rem;
+    border: 1px solid var(--pq-line);
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.pq-search i { color: #94a3b8; font-size: 0.85rem; }
+
+.pq-search input {
+    border: 0;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--pq-ink);
+}
+
+.pq-toolbar select,
+.pq-date,
+.pq-reset {
+    height: 34px;
+    border: 1px solid var(--pq-line);
+    border-radius: 8px;
+    background: #f8fafc;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--pq-ink);
+}
+
+.pq-toolbar select {
+    min-width: 130px;
+    padding: 0 0.55rem;
+}
+
+.pq-date {
+    padding: 0 0.55rem;
+    min-width: 145px;
+}
+
+.pq-search:focus-within,
+.pq-toolbar select:focus,
+.pq-date:focus {
+    border-color: var(--pq-blue);
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 111, 196, 0.12);
+}
+
+.pq-reset {
+    padding: 0 0.85rem;
+    background: #fff;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+}
+
+.pq-reset:hover {
+    background: #f1f5f9;
+}
+
+.pq-panel {
+    background: #fff;
+    border: 1px solid var(--pq-line);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.pq-table-wrap {
+    overflow: auto;
+}
+
+.pq-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.pq-table thead th {
+    background: #f8fafc;
+    border-bottom: 1px solid var(--pq-line);
+    padding: 0.55rem 0.75rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.pq-table thead th.text-end,
+.pq-table td.text-end {
+    text-align: right;
+}
+
+.pq-col-num {
+    width: 2.5rem;
+}
+
+.pq-table tbody td {
+    padding: 0.7rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.8125rem;
+    vertical-align: middle;
+}
+
+.pq-row:last-child td {
+    border-bottom: 0;
+}
+
+.pq-row:hover td {
+    background: #f8fafc;
+}
+
+.pq-num {
+    color: #94a3b8;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+}
+
+.pq-pid {
+    color: var(--pq-blue);
+    font-weight: 650;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+}
+
+.pq-name {
+    font-weight: 650;
+    color: #1e293b;
+}
+
+.pq-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.pq-badge--ready {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.pq-badge--printed {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.pq-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 30px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: var(--pq-blue);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 650;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.pq-btn:hover {
+    background: #155a9e;
+    color: #fff;
+}
+
+.pq-foot {
+    padding: 0.45rem 0.75rem;
+    border-top: 1px solid var(--pq-line);
+    font-size: 0.75rem;
+    color: var(--pq-mute);
+}
+
+.pq-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--pq-mute);
+}
+
+.pq-empty i {
+    font-size: 2rem;
+    opacity: 0.45;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.pq-empty h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+    color: #334155;
+}
+
+.pq-empty p {
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+.pq-empty-sm {
+    padding: 1.5rem 1rem;
+}
+
+@media (max-width: 900px) {
+    .pq-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pq-search,
+    .pq-toolbar select,
+    .pq-date,
+    .pq-reset {
+        width: 100%;
+    }
+
+    .pq-table thead {
+        display: none;
+    }
+
+    .pq-row {
+        display: block;
+        padding: 0.85rem 0.9rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .pq-row td {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.25rem 0;
+        border: 0;
+    }
+
+    .pq-row td::before {
+        content: attr(data-label);
+        color: #94a3b8;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .pq-row td.text-end {
+        justify-content: flex-start;
+        padding-top: 0.55rem;
+    }
+
+    .pq-num {
+        display: none;
+    }
+}
+
+/* Legacy queue styles (kept for compatibility) */
+.it-print-queue-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+}
+
+.it-print-queue-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.it-print-queue-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+}
+
+.it-queue-count {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.it-print-table thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--secondary);
+    background: #f8fafc;
+    border-bottom-width: 1px;
+}
+
+.it-print-table tbody td {
+    font-size: 0.875rem;
+}
+
+.it-patient-code {
+    font-size: 0.8125rem;
+    color: var(--primary);
+    background: var(--primary-50);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+.it-badge-ready {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    font-weight: 600;
+}
+
+.it-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--secondary);
+}
+
+.it-empty-state i {
+    font-size: 2.5rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+/* Patient folder */
+.it-folder-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+}
+
+.it-folder-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    flex: 1;
+}
+
+.it-folder-patient-id {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.it-folder-patient-name {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.it-folder-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr 260px;
+    gap: 1rem;
+    align-items: start;
+}
+
+.it-folder-nav {
+    position: sticky;
+    top: calc(var(--topbar-height) + 1rem);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+}
+
+.it-folder-nav-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+    padding: 0 0.25rem;
+}
+
+.it-form-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.it-form-nav-link {
+    display: block;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.75rem;
+    color: #475569;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    line-height: 1.3;
+}
+
+.it-form-nav-link:hover {
+    background: var(--primary-50);
+    color: var(--primary);
+}
+
+.it-folder-forms {
+    background: #e8ecf0;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.it-print-form-section {
+    margin-bottom: 1.5rem;
+    scroll-margin-top: 90px;
+}
+
+.it-print-panel {
+    position: sticky;
+    top: calc(var(--topbar-height) + 1rem);
+}
+
+.it-print-panel-disabled .it-print-actions {
+    opacity: 0.65;
+}
+
+.it-print-panel-inner {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.it-print-panel-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    margin: 0 0 0.35rem;
+}
+
+.it-print-panel-desc {
+    font-size: 0.75rem;
+    color: var(--secondary);
+    margin-bottom: 0.75rem;
+}
+
+.it-print-panel-meta {
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.it-print-panel-meta dt {
+    color: var(--secondary);
+    font-weight: 500;
+    margin-bottom: 0.1rem;
+}
+
+.it-print-panel-meta dd {
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.it-print-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.it-print-actions .btn {
+    text-align: left;
+    justify-content: flex-start;
+}
+
+.it-print-note {
+    font-size: 0.6875rem;
+    margin: 0.75rem 0 0;
+    line-height: 1.4;
+}
+
+/* Read-only folder — no edit appearance */
+.it-readonly-forms input,
+.it-readonly-forms textarea,
+.it-readonly-forms select {
+    pointer-events: none;
+    cursor: default;
+}
+
+.it-readonly-forms .pf-line,
+.it-readonly-forms .pf-area,
+.it-readonly-forms .pf-select {
+    background: #fafafa !important;
+    color: #111 !important;
+    -webkit-text-fill-color: #111;
+}
+
+.it-readonly-forms.it-layout-test-mode .pf-line,
+.it-readonly-forms.it-layout-test-mode .pf-area,
+.it-readonly-forms.it-layout-test-mode .pf-select {
+    background: transparent !important;
+    color: #000 !important;
+    -webkit-text-fill-color: #000;
+}
+
+.it-readonly-forms.it-layout-test-mode .pf-line::placeholder,
+.it-readonly-forms.it-layout-test-mode .pf-area::placeholder {
+    color: transparent !important;
+}
+
+.it-readonly-forms .pf-check input,
+.it-readonly-forms .pf-radio input {
+    pointer-events: none;
+}
+
+/* Preview modal */
+.it-preview-modal .modal-header {
+    background: #f8fafc;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.it-preview-frame {
+    width: 100%;
+    height: calc(100vh - 56px);
+    border: none;
+    background: #e8ecf0;
+}
+
+.it-preview-toolbar {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Standalone preview page */
+.it-preview-body {
+    margin: 0;
+    background: #e8ecf0;
+}
+
+.it-preview-chrome {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+}
+
+.it-preview-chrome-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    max-width: 210mm;
+    margin: 0 auto;
+}
+
+.it-preview-pages {
+    padding: 1rem;
+    max-width: calc(210mm + 2rem);
+    margin: 0 auto;
+}
+
+.it-print-form-block {
+    margin-bottom: 1rem;
+}
+
+/* Layout test mode — official paper appearance only */
+.it-layout-test-banner {
+    background: #eff6ff;
+    border-bottom: 1px solid #bfdbfe;
+    color: #1e40af;
+    font-size: 0.8125rem;
+    padding: 0.5rem 1rem;
+    text-align: center;
+}
+
+.it-layout-test-mode .pf-line,
+.it-layout-test-mode .pf-area,
+.it-layout-test-mode .pf-select,
+.it-layout-test-mode input:disabled,
+.it-layout-test-mode textarea:disabled,
+.it-layout-test-mode select:disabled {
+    background: transparent !important;
+    color: #000 !important;
+    -webkit-text-fill-color: #000;
+    border-bottom-color: #000 !important;
+    box-shadow: none !important;
+}
+
+.it-layout-test-mode .pf-line::placeholder,
+.it-layout-test-mode .pf-area::placeholder,
+.it-layout-test-mode .pf-select option[value=""] {
+    color: transparent !important;
+    opacity: 0 !important;
+}
+
+.it-layout-test-mode .pf-profile-field,
+.it-layout-test-mode .pf-profile-field.pf-profile-filled,
+.it-layout-test-mode .pf-profile-field.pf-profile-computed,
+.it-layout-test-mode .pf-profile-field.pf-profile-readonly,
+.it-layout-test-mode input[data-profile-field="patient_id"] {
+    background: transparent !important;
+}
+
+.it-layout-test-mode .text-danger,
+.it-layout-test-mode .validation-hint,
+.it-layout-test-mode .missing-field,
+.it-layout-test-mode .field-error,
+.it-layout-test-mode .badge-status {
+    display: none !important;
+}
+
+@media (max-width: 1199.98px) {
+    .it-folder-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .it-folder-nav,
+    .it-print-panel {
+        position: static;
+    }
+
+    .it-form-nav-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+@media print {
+    .no-print,
+    .it-preview-chrome,
+    .it-folder-toolbar,
+    .it-folder-nav,
+    .it-print-panel,
+    .it-layout-test-banner,
+    .modal {
+        display: none !important;
+    }
+
+    /* Paper metrics / page breaks: see assets/css/official-print.css */
+    .it-preview-body {
+        background: #fff !important;
+        margin: 0 !important;
+    }
+
+    .it-preview-pages {
+        padding: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+    }
+
+    .pf-line, .pf-area, .pf-select {
+        background: transparent !important;
+        border-bottom-color: #000 !important;
+    }
+
+    .pf-line::placeholder,
+    .pf-area::placeholder {
+        color: transparent !important;
+    }
+}
+
+/* Screen preview for official layouts — fixed paper sizes owned by official-print.css */
+.it-preview-chrome-inner--wide {
+    max-width: 1100px;
+}
+
+.it-preview-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.15rem;
+}
+
+.it-preview-pages--a4-landscape-half,
+.it-preview-pages--legal-portrait,
+.it-preview-pages--a4-portrait {
+    max-width: none;
+}
+
+/* Do not override .print-page dimensions here — official-print.css is authoritative */
+.it-print-sheet--half-half:not(.print-page) {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.it-layout--a4-duplex .print-page + .print-page {
+    margin-top: 0;
+}
+
+/* Print dialog document cards */
+.pq-doc-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pq-doc-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    cursor: pointer;
+    margin: 0;
+}
+
+.pq-doc-check:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.pq-doc-check input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.pq-doc-check-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.pq-doc-check-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.3;
+}
+
+.pq-doc-check-hint {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.35;
+}

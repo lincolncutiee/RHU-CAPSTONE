@@ -1,0 +1,847 @@
+/* ============================================
+   Patient Folder — EMR layout
+   ============================================ */
+
+.emr-folder,
+.emr-consultation-page {
+    animation: fadeIn 0.35s ease;
+}
+
+/* Compact folder chrome — no large hero header */
+.emr-folder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.emr-folder-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.emr-folder .emr-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8125rem;
+    color: var(--secondary);
+    text-decoration: none;
+    width: auto;
+    margin: 0;
+}
+
+.emr-folder .emr-back-link:hover {
+    color: var(--primary);
+}
+
+.emr-folder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.emr-folder .emr-tab-content {
+    margin-top: 0.15rem;
+}
+
+/* Legacy header (still used by Consultation page) */
+.emr-folder-header {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.emr-folder-header-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1rem 1.5rem;
+}
+
+.emr-consultation-page .emr-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    color: var(--secondary);
+    text-decoration: none;
+    width: 100%;
+    margin-bottom: 0.25rem;
+}
+
+.emr-consultation-page .emr-back-link:hover {
+    color: var(--primary);
+}
+
+.emr-patient-identity {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    min-width: 240px;
+}
+
+.emr-patient-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--primary-50);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.emr-patient-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.35rem;
+    line-height: 1.3;
+}
+
+.emr-patient-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    font-size: 0.8125rem;
+    color: #475569;
+}
+
+.emr-patient-meta strong {
+    color: #334155;
+    font-weight: 600;
+}
+
+.emr-header-status {
+    margin-left: auto;
+}
+
+.emr-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+/* ---- Tabs ---- */
+.emr-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.75rem;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 0.35rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.emr-folder .emr-tabs {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.emr-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+
+.emr-tab:hover {
+    background: var(--gray-light);
+    color: var(--primary);
+}
+
+.emr-tab.is-active {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.emr-tab-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: inherit;
+    font-size: 0.6875rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.emr-tab:not(.is-active) .emr-tab-badge {
+    background: var(--primary-50);
+    color: var(--primary);
+}
+
+/* ---- Tab content ---- */
+.emr-tab-content {
+    min-height: 320px;
+}
+
+.emr-section-title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.35rem;
+}
+
+.emr-section-desc {
+    font-size: 0.8125rem;
+    color: var(--secondary);
+    margin-bottom: 1.25rem;
+}
+
+.emr-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.emr-section-header--actions-only {
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+/* ---- Summary card ---- */
+.emr-summary-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.emr-summary-card--compact {
+    padding: 1.1rem 1.25rem 1.15rem;
+}
+
+.emr-summary-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem 1.15rem;
+    margin-bottom: 0.85rem;
+}
+
+.emr-summary-compact .emr-summary-item--name {
+    grid-column: 1 / -1;
+}
+
+.emr-summary-compact .emr-summary-value {
+    font-size: 0.9375rem;
+}
+
+.emr-summary-compact .emr-summary-item--name .emr-summary-value {
+    font-size: 1.05rem;
+    font-weight: 650;
+    color: #0f172a;
+}
+
+.emr-summary-accordion {
+    --bs-accordion-border-color: #e2e8f0;
+    --bs-accordion-btn-bg: #f8fafc;
+    --bs-accordion-btn-color: #334155;
+    --bs-accordion-active-bg: #f1f5f9;
+    --bs-accordion-active-color: #1a6fc4;
+    --bs-accordion-btn-focus-box-shadow: 0 0 0 0.2rem rgba(26, 111, 196, 0.12);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.emr-summary-accordion .accordion-button {
+    font-size: 0.875rem;
+    font-weight: 650;
+    padding: 0.7rem 1rem;
+}
+
+.emr-summary-accordion .accordion-button:not(.collapsed) {
+    box-shadow: none;
+}
+
+.emr-summary-accordion .accordion-body {
+    padding: 1rem 1rem 1.1rem;
+    background: #fff;
+}
+
+.emr-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem 1.5rem;
+}
+
+.emr-summary-grid--details {
+    gap: 0.85rem 1.25rem;
+}
+
+.emr-summary-item-wide {
+    grid-column: 1 / -1;
+}
+
+.emr-summary-label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    margin-bottom: 0.2rem;
+}
+
+.emr-summary-value {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.emr-summary-latest {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.emr-summary-latest h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.emr-summary-latest p {
+    font-size: 0.8125rem;
+    color: #475569;
+    margin-bottom: 0.75rem;
+}
+
+/* ---- Profile forms grid ---- */
+.emr-profile-forms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.emr-profile-form-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.emr-profile-form-card:hover {
+    border-color: #bfdbfe;
+    box-shadow: var(--shadow-md);
+}
+
+.emr-profile-form-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--primary-50);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+}
+
+.emr-profile-form-card h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: #0f172a;
+}
+
+.emr-readonly-badge {
+    font-size: 0.75rem;
+    color: #64748b;
+    background: var(--gray-light);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+}
+
+/* ---- Consultation timeline ---- */
+.emr-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.emr-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), #e2e8f0);
+}
+
+.emr-timeline-item {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.emr-timeline-marker {
+    position: absolute;
+    left: -1.5rem;
+    top: 1.25rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 2px var(--primary-50);
+    z-index: 1;
+}
+
+.emr-timeline-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.emr-timeline-toggle {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.emr-timeline-toggle:hover {
+    background: #f8fafc;
+}
+
+.emr-visit-label {
+    font-weight: 700;
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+.emr-visit-date {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.emr-timeline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: #64748b;
+}
+
+.emr-chevron {
+    transition: transform 0.2s ease;
+}
+
+.emr-timeline-toggle.is-open .emr-chevron {
+    transform: rotate(180deg);
+}
+
+.emr-timeline-detail {
+    padding: 0 1.25rem 1.25rem;
+    border-top: 1px solid var(--gray-200);
+    animation: fadeIn 0.25s ease;
+}
+
+.emr-timeline-detail p {
+    font-size: 0.8125rem;
+    color: #475569;
+    margin: 0.75rem 0 0;
+}
+
+.emr-consult-forms {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+}
+
+.emr-forms-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.emr-form-chip {
+    display: inline-block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: var(--primary-50);
+    color: var(--primary);
+    letter-spacing: 0.02em;
+}
+
+/* ---- Print history table ---- */
+.emr-print-table {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    font-size: 0.8125rem;
+}
+
+.emr-print-table thead th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    border-bottom-width: 1px;
+}
+
+/* ---- Empty state ---- */
+.emr-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: var(--white);
+    border: 1px dashed var(--gray-200);
+    border-radius: var(--radius-lg);
+    color: #64748b;
+}
+
+.emr-empty-state i {
+    font-size: 2.5rem;
+    color: var(--primary);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.emr-empty-state h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.35rem;
+}
+
+/* ---- Consultation page ---- */
+.emr-autofill-banner {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.emr-autofill-banner h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 0.75rem;
+}
+
+.emr-autofill-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    font-size: 0.8125rem;
+    color: #334155;
+}
+
+.emr-autofill-wide {
+    width: 100%;
+}
+
+.emr-consultation-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+.emr-consultation-layout.has-print-panel {
+    grid-template-columns: 1fr 280px;
+}
+
+.emr-consult-form-section {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.emr-consult-form-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-50);
+}
+
+.emr-consult-print-panel {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+}
+
+@media (max-width: 991.98px) {
+    .emr-consultation-layout.has-print-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .emr-consult-print-panel {
+        position: static;
+    }
+
+    .emr-header-status {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .emr-tabs {
+        flex-direction: column;
+    }
+
+    .emr-tab {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+/* Consultation Records — visit accordion + form cards */
+.emr-consult-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.emr-consult-sort {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.emr-consult-sort-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-right: 0.25rem;
+}
+
+.emr-visit-accordion .accordion-item {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.emr-visit-accordion .accordion-item:last-child {
+    margin-bottom: 0;
+}
+
+.emr-visit-accordion .accordion-button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--white);
+    color: var(--gray-900);
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.emr-visit-accordion .accordion-button:not(.collapsed) {
+    background: var(--primary-50);
+    color: var(--primary);
+}
+
+.emr-visit-accordion .accordion-button:focus {
+    box-shadow: none;
+    border-color: var(--gray-200);
+}
+
+.emr-visit-accordion .accordion-button::after {
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+.emr-visit-btn-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.emr-visit-btn-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.emr-visit-accordion .emr-visit-label {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.emr-visit-accordion .emr-visit-date {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.emr-visit-doctor {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gray-600);
+}
+
+.emr-visit-accordion .accordion-button:not(.collapsed) .emr-visit-doctor {
+    color: var(--primary);
+    opacity: 0.85;
+}
+
+.emr-visit-form-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    white-space: nowrap;
+}
+
+.emr-visit-accordion .accordion-body {
+    padding: 1rem 1.25rem 1.25rem;
+    background: var(--gray-50);
+}
+
+.emr-visit-highlights {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+}
+
+.emr-visit-highlights p {
+    margin: 0 0 0.35rem;
+    font-size: 0.8125rem;
+    color: var(--gray-700);
+}
+
+.emr-visit-highlights p:last-child {
+    margin-bottom: 0;
+}
+
+.emr-visit-forms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.emr-visit-form-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 0.5rem;
+    row-gap: 0.15rem;
+    padding: 0.5rem 0.65rem;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.5rem;
+    box-shadow: none;
+}
+
+.emr-visit-form-icon {
+    grid-row: 1 / span 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.35rem;
+    background: var(--primary-50);
+    color: var(--primary);
+    font-size: 0.8125rem;
+}
+
+.emr-visit-form-body {
+    grid-column: 2;
+    min-width: 0;
+}
+
+.emr-visit-form-body h4 {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 650;
+    color: var(--gray-900);
+    line-height: 1.25;
+}
+
+.emr-visit-form-body .text-muted {
+    font-size: 0.65rem !important;
+    line-height: 1.2;
+}
+
+.emr-visit-form-card .btn {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.emr-visit-empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+@media (max-width: 575.98px) {
+    .emr-consult-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .emr-visit-btn-main,
+    .emr-visit-btn-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .emr-visit-accordion .accordion-button {
+        flex-wrap: wrap;
+    }
+}
