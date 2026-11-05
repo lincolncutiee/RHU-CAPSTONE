@@ -81,7 +81,7 @@ $stmt->close();
 $conn->close();
 
 $documents = [
-    ['id' => 'pkrf', 'short' => 'PKRF', 'label' => 'PhilHealth Konsulta Registration Form (PKRF)', 'title' => '1. PKRF (PhilHealth Konsulta Registration Form)'],
+    ['id' => 'pcsf', 'short' => 'PCSF', 'label' => 'PhilHealth Primary Care Selection Form (PCSF)', 'title' => '1. PCSF (PhilHealth Primary Care Selection Form)'],
     ['id' => 'itr', 'short' => 'ITR', 'label' => 'Individual Treatment Record', 'title' => '2. Individual Treatment Record'],
     ['id' => 'enrollment', 'short' => 'Enrollment', 'label' => 'Patient Enrollment Record', 'title' => '3. Patient Enrollment Record'],
     ['id' => 'history', 'short' => 'Medical History', 'label' => 'Past Medical / Surgical / Family History', 'title' => '4. Past Medical / Surgical / Family History'],
@@ -140,7 +140,7 @@ require_once __DIR__ . '/../includes/header.php';
   <!-- Patient Information Banner -->
   <section class="itv-patient-banner" aria-label="Patient Information">
     <div class="itv-banner-item">
-      <span class="itv-label">Patient ID</span>
+      <span class="itv-label">PIN</span>
       <strong><?= htmlspecialchars($summary['patient_id']) ?></strong>
     </div>
     <div class="itv-banner-item">
@@ -276,7 +276,7 @@ require_once __DIR__ . '/../includes/header.php';
             <i class="bi bi-check2-circle"></i> Approve &amp; Send to Print Queue
           </button>
         </div>
-        <p class="itv-action-hint">IT can fill and save Records Office fields (enrollment, history, ITR intake, PKRF). Doctor clinical fields stay read-only.</p>
+        <p class="itv-action-hint">IT can fill and save Records Office fields (enrollment, history, ITR intake, PCSF). Doctor clinical fields stay read-only.</p>
       </section>
     </aside>
   </div>

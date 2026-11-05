@@ -14,41 +14,40 @@ $consultTypes = [
 ?>
 <div class="paper-sheet">
 <div class="paper-sheet-inner">
-    <div class="pf-title-sub">Integrated Clinic Information System (iCLINICSYS)</div>
-    <div class="pf-title-main">INDIVIDUAL TREATMENT RECORD</div>
-    <p class="pf-instructions">Instructions: For old, returning and/or referred patient. Please print legibly and mark appropriate boxes with 'X'.<br>
-    <em>Tagubilin: Para sa mga dating pasyente, bumabalik at/o nire-refer. Mangyaring sulatan nang mabuti at lagyan ng 'X' ang naaangkop na kahon.</em></p>
+    <?= $P::titleSub('Integrated Clinic Information System (iCLINICSYS)') ?>
+    <?= $P::titleMain('INDIVIDUAL TREATMENT RECORD') ?>
+    <?= $P::instructionsBlock('page.itr.instructions', "Instructions: For old, returning and/or referred patient. Please print legibly and mark appropriate boxes with 'X'.\nTagubilin: Para sa mga dating pasyente, bumabalik at/o nire-refer. Mangyaring sulatan nang mabuti at lagyan ng 'X' ang naaangkop na kahon.") ?>
 
     <?= $P::sectionBar('I. PATIENT INFORMATION (IMPORMASYON NG PASYENTE)') ?>
 
     <table class="pf-table">
         <tr>
             <td style="width:35%;">
-                <span class="pf-label">Last Name (Apelyido)</span>
+                <?= $P::label('Last Name (Apelyido)', 'last_name', false) ?>
                 <?= $P::line('last_name', $role, $fgEnroll, $lockRecords, false, 'text', '', '') ?>
             </td>
             <td style="width:15%;">
-                <span class="pf-label">Suffix (e.g., Jr., Sr., II, III)</span>
+                <?= $P::label('Suffix (e.g., Jr., Sr., II, III)', 'suffix', false) ?>
                 <?= $P::line('suffix', $role, $fgEnroll, $lockRecords) ?>
             </td>
             <td style="width:15%;">
-                <span class="pf-label">Age (Edad)</span>
+                <?= $P::label('Age (Edad)', 'itr_age', false) ?>
                 <?= $P::line('itr_age', $role, $fgTreat, $lockRecords, true) ?>
             </td>
             <td rowspan="3" style="width:35%;vertical-align:top;">
-                <span class="pf-label">Residential Address (Tirahan)</span>
+                <?= $P::label('Residential Address (Tirahan)', 'address_barangay', false) ?>
                 <?= $P::magallanesAddress($role, $fgEnroll, $lockRecords, 'compact') ?>
             </td>
         </tr>
         <tr>
             <td colspan="3">
-                <span class="pf-label">First Name (Pangalan)</span>
+                <?= $P::label('First Name (Pangalan)', 'first_name', false) ?>
                 <?= $P::line('first_name', $role, $fgEnroll, $lockRecords) ?>
             </td>
         </tr>
         <tr>
             <td colspan="3">
-                <span class="pf-label">Middle Name (Gitnang Pangalan)</span>
+                <?= $P::label('Middle Name (Gitnang Pangalan)', 'middle_name', false) ?>
                 <?= $P::line('middle_name', $role, $fgEnroll, $lockRecords) ?>
             </td>
         </tr>
@@ -59,60 +58,60 @@ $consultTypes = [
     <table class="pf-table">
         <tr>
             <td style="width:50%;vertical-align:top;">
-                <span class="pf-label">Mode of Transaction:</span><br>
+                <?= $P::label('Mode of Transaction:', 'mode_of_transaction') ?>
                 <?= $P::radio('mode_of_transaction', 'Walk-in', 'Walk-in', $role, $fgTreat, $lockRecords) ?>
                 <?= $P::radio('mode_of_transaction', 'Visited', 'Visited', $role, $fgTreat, $lockRecords) ?>
                 <?= $P::radio('mode_of_transaction', 'Referral', 'Referral', $role, $fgTreat, $lockRecords) ?>
 
                 <div class="pf-field-row" style="margin-top:6px;">
-                    <span class="pf-label">Date of Consultation (mm/dd/yyyy)</span>
+                    <?= $P::label('Date of Consultation (mm/dd/yyyy)', 'date_of_consultation') ?>
                     <?= $P::line('date_of_consultation', $role, $fgTreat, $lockRecords, false, 'date') ?>
                 </div>
                 <div class="pf-field-row pf-inline">
                     <div class="pf-field">
-                        <span class="pf-label">Consultation Time</span>
+                        <?= $P::label('Consultation Time', 'consultation_time', false) ?>
                         <?= $P::line('consultation_time', $role, $fgTreat, $lockRecords, false, 'time') ?>
                     </div>
                     <div class="pf-field" style="max-width:100px;">
-                        <span class="pf-label">&nbsp;</span>
+                        <?= $P::label("\xC2\xA0", 'consultation_period', false) ?>
                         <?= $P::select('consultation_period', ['' => '—', 'AM' => 'AM', 'PM' => 'PM'], $role, $fgTreat, $lockRecords) ?>
                     </div>
                 </div>
 
                 <table class="pf-table" style="margin-top:6px;">
                     <tr>
-                        <td><span class="pf-label">Blood Pressure</span><?= $P::line('blood_pressure', $role, $fgTreat, $lockRecords) ?></td>
-                        <td><span class="pf-label">Temperature</span><?= $P::line('temperature', $role, $fgTreat, $lockRecords) ?></td>
+                        <td><?= $P::label('Blood Pressure', 'blood_pressure', false) ?><?= $P::line('blood_pressure', $role, $fgTreat, $lockRecords) ?></td>
+                        <td><?= $P::label('Temperature', 'temperature', false) ?><?= $P::line('temperature', $role, $fgTreat, $lockRecords) ?></td>
                     </tr>
                     <tr>
-                        <td><span class="pf-label">Height (cm)</span><?= $P::line('height_cm', $role, $fgTreat, $lockRecords, false, 'number') ?></td>
-                        <td><span class="pf-label">Weight (kg)</span><?= $P::line('weight_kg', $role, $fgTreat, $lockRecords, false, 'number') ?></td>
+                        <td><?= $P::label('Height (cm)', 'height_cm', false) ?><?= $P::line('height_cm', $role, $fgTreat, $lockRecords, false, 'number') ?></td>
+                        <td><?= $P::label('Weight (kg)', 'weight_kg', false) ?><?= $P::line('weight_kg', $role, $fgTreat, $lockRecords, false, 'number') ?></td>
                     </tr>
                 </table>
 
                 <div class="pf-field-row" style="margin-top:6px;">
-                    <span class="pf-label">Name of Attending Provider</span>
+                    <?= $P::label('Name of Attending Provider', 'attending_provider', false) ?>
                     <?= $P::line('attending_provider', $role, $fgTreat, $lockRecords) ?>
                 </div>
             </td>
             <td style="width:50%;vertical-align:top;">
                 <strong style="font-size:8pt;">For REFERRAL Transaction only.</strong>
                 <div class="pf-field-row">
-                    <span class="pf-label">REFERRED FROM:</span>
+                    <?= $P::label('REFERRED FROM:', 'referred_from', false) ?>
                     <?= $P::line('referred_from', $role, $fgTreat, $lockRecords) ?>
                     <?= $P::line('referred_from_2', $role, $fgTreat, $lockRecords, true) ?>
                 </div>
                 <div class="pf-field-row">
-                    <span class="pf-label">REFERRED TO:</span>
+                    <?= $P::label('REFERRED TO:', 'referred_to', false) ?>
                     <?= $P::line('referred_to', $role, $fgTreat, $lockRecords) ?>
                     <?= $P::line('referred_to_2', $role, $fgTreat, $lockRecords, true) ?>
                 </div>
                 <div class="pf-field-row">
-                    <span class="pf-label">Reason(s) for Referral:</span>
+                    <?= $P::label('Reason(s) for Referral:', 'referral_reasons', false) ?>
                     <?= $P::area('referral_reasons', $role, $fgTreat, $lockRecords, false, 4) ?>
                 </div>
                 <div class="pf-field-row">
-                    <span class="pf-label">Referred by:</span>
+                    <?= $P::label('Referred by:', 'referred_by', false) ?>
                     <?= $P::line('referred_by', $role, $fgTreat, $lockRecords) ?>
                 </div>
             </td>
@@ -122,13 +121,13 @@ $consultTypes = [
     <table class="pf-table">
         <tr>
             <td style="width:55%;vertical-align:top;">
-                <span class="pf-label">Nature of Visit:</span><br>
+                <?= $P::label('Nature of Visit:', 'nature_of_visit', false) ?>
                 <?= $P::radio('nature_of_visit', 'New Consultation/Case', 'New Consultation/Case', $role, $fgTreat, $lockRecords) ?>
                 <?= $P::radio('nature_of_visit', 'New Admission', 'New Admission', $role, $fgTreat, $lockRecords) ?>
                 <?= $P::radio('nature_of_visit', 'Follow-up Visit', 'Follow-up Visit', $role, $fgTreat, $lockRecords) ?>
 
                 <div style="margin-top:6px;">
-                    <span class="pf-label">Type of Consultation / Purpose of Visit:</span>
+                    <?= $P::label('Type of Consultation / Purpose of Visit:', 'consultation_types', false) ?>
                     <div class="pf-check-grid" style="margin-top:4px;">
                         <?php foreach ($consultTypes as $opt): ?>
                             <label class="pf-check">
@@ -141,7 +140,7 @@ $consultTypes = [
                 </div>
             </td>
             <td style="width:45%;vertical-align:top;">
-                <span class="pf-label">Chief Complaints:</span>
+                <?= $P::label('Chief Complaints:', 'chief_complaints') ?>
                 <?= $P::area('chief_complaints', $role, $fgTreat, $lockRecords, false, 8) ?>
             </td>
         </tr>
@@ -150,37 +149,37 @@ $consultTypes = [
     <table class="pf-table">
         <tr>
             <td colspan="2">
-                <span class="pf-label">Diagnosis:</span>
+                <?= $P::label('Diagnosis:', 'diagnosis', false) ?>
                 <?= $P::area('diagnosis', $role, $fgDoctor, $lockRecords, false, 2) ?>
             </td>
         </tr>
         <tr>
             <td style="width:65%;vertical-align:top;">
-                <span class="pf-label">Medication / Treatment:</span>
+                <?= $P::label('Medication / Treatment:', 'medication_treatment', false) ?>
                 <?= $P::area('medication_treatment', $role, $fgDoctor, $lockRecords, false, 4) ?>
             </td>
             <td style="width:35%;vertical-align:top;">
-                <span class="pf-label">Name of Health Care Provider:</span>
+                <?= $P::label('Name of Health Care Provider:', 'healthcare_provider', false) ?>
                 <?= $P::area('healthcare_provider', $role, $fgDoctor, $lockRecords, false, 4) ?>
             </td>
         </tr>
         <tr>
             <td style="vertical-align:top;">
-                <span class="pf-label">Assessment / Laboratory Findings / Impression:</span>
+                <?= $P::label('Assessment / Laboratory Findings / Impression:', 'laboratory_findings', false) ?>
                 <?= $P::area('laboratory_findings', $role, $fgDoctor, $lockRecords, false, 4) ?>
             </td>
             <td style="vertical-align:top;">
-                <span class="pf-label">Performed Laboratory Test:</span>
+                <?= $P::label('Performed Laboratory Test:', 'performed_lab_test', false) ?>
                 <?= $P::area('performed_lab_test', $role, $fgDoctor, $lockRecords, false, 4) ?>
             </td>
         </tr>
         <tr>
             <td style="vertical-align:top;">
-                <span class="pf-label">Treatment Plan:</span>
+                <?= $P::label('Treatment Plan:', 'doctor_treatment_plan', false) ?>
                 <?= $P::area('doctor_treatment_plan', $role, $fgDoctor, $lockRecords, true, 3) ?>
             </td>
             <td style="vertical-align:top;">
-                <span class="pf-label">Follow-up Instructions:</span>
+                <?= $P::label('Follow-up Instructions:', 'doctor_follow_up', false) ?>
                 <?= $P::area('doctor_follow_up', $role, $fgDoctor, $lockRecords, true, 3) ?>
             </td>
         </tr>

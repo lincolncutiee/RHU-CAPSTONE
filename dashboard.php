@@ -6,6 +6,11 @@ requireLogin();
 $user = currentUser();
 $role = Permissions::normalizeRole($user['role'] ?? '');
 
+if ($role === ROLE_SYSTEM_ADMIN) {
+    header('Location: ' . BASE_URL . '/admin/users.php');
+    exit;
+}
+
 $pageTitle    = 'Dashboard';
 $pageSubtitle = 'RHU Management System Overview';
 $activePage   = 'dashboard';
@@ -13,15 +18,24 @@ $activePage   = 'dashboard';
 require_once __DIR__ . '/core/ReceptionQueue.php';
 require_once __DIR__ . '/core/Pharmacy.php';
 require_once __DIR__ . '/core/WorkflowStatus.php';
+require_once __DIR__ . '/core/DoctorDashboard.php';
+require_once __DIR__ . '/core/ItDashboard.php';
+require_once __DIR__ . '/core/RecordsDashboard.php';
 
 $conn = getDBConnection();
 $stats = [];
+$doctorDashboard = null;
+$itDashboard = null;
+$recordsDashboard = null;
+$total = 0;
 
-$r = $conn->query("SELECT status, COUNT(*) AS cnt FROM patients WHERE is_archived = 0 GROUP BY status");
-while ($row = $r->fetch_assoc()) {
-    $stats[$row['status']] = (int) $row['cnt'];
+if (!in_array($role, [ROLE_PHARMACY, ROLE_DOCTOR, ROLE_IT, ROLE_RECORDS], true)) {
+    $r = $conn->query("SELECT status, COUNT(*) AS cnt FROM patients WHERE is_archived = 0 GROUP BY status");
+    while ($row = $r->fetch_assoc()) {
+        $stats[$row['status']] = (int) $row['cnt'];
+    }
+    $total = array_sum($stats);
 }
-$total = array_sum($stats);
 
 $rqStats = null;
 if ($role === ROLE_RECEPTIONIST) {
@@ -50,14 +64,53 @@ if ($role === ROLE_PHARMACY) {
     $pageSubtitle = '';
     $hidePageTitleBar = true;
     $hidePatientSearch = true;
-    $extraCSS = [BASE_URL . '/assets/css/pharmacy.css?v=3'];
+    $extraCSS = [BASE_URL . '/assets/css/pharmacy.css?v=4'];
+} elseif ($role === ROLE_DOCTOR) {
+    $doctorDashboard = DoctorDashboard::load($conn);
+    $pageTitle = 'Doctor Dashboard';
+    $pageSubtitle = '';
+    $hidePageTitleBar = true;
+    $extraCSS = [BASE_URL . '/assets/css/doctor-dashboard.css?v=3'];
+} elseif ($role === ROLE_IT) {
+    $itDashboard = ItDashboard::load($conn);
+    $pageTitle = 'IT Dashboard';
+    $pageSubtitle = '';
+    $hidePageTitleBar = true;
+    $extraCSS = [BASE_URL . '/assets/css/it-dashboard.css?v=4'];
+} elseif ($role === ROLE_RECORDS) {
+    $recordsDashboard = RecordsDashboard::load($conn);
+    $pageTitle = 'Records Dashboard';
+    $pageSubtitle = '';
+    $hidePageTitleBar = true;
+    $hidePatientSearch = true;
+    $rcdCss = __DIR__ . '/assets/css/records-dashboard.css';
+    $itCss = __DIR__ . '/assets/css/it-dashboard.css';
+    $extraCSS = [
+        BASE_URL . '/assets/css/it-dashboard.css?v=' . ((int) @filemtime($itCss) ?: 4),
+        BASE_URL . '/assets/css/records-dashboard.css?v=' . ((int) @filemtime($rcdCss) ?: 1),
+    ];
 }
 $conn->close();
 
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<?php if ($role === ROLE_PHARMACY): ?>
+<?php if ($role === ROLE_DOCTOR && $doctorDashboard): ?>
+    <?php
+    $dd = $doctorDashboard;
+    require __DIR__ . '/doctor/partials/dashboard.php';
+    ?>
+<?php elseif ($role === ROLE_IT && $itDashboard): ?>
+    <?php
+    $itd = $itDashboard;
+    require __DIR__ . '/it/partials/dashboard.php';
+    ?>
+<?php elseif ($role === ROLE_RECORDS && $recordsDashboard): ?>
+    <?php
+    $rd = $recordsDashboard;
+    require __DIR__ . '/records/partials/dashboard.php';
+    ?>
+<?php elseif ($role === ROLE_PHARMACY): ?>
     <?php
     $queue = $pharmacyQueue;
     $statusFilter = $pharmacyStatusFilter;
@@ -188,7 +241,7 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 <?php endif; ?>
 
-<?php if ($role !== ROLE_PHARMACY): ?>
+<?php if (!in_array($role, [ROLE_PHARMACY, ROLE_DOCTOR, ROLE_IT, ROLE_RECORDS], true)): ?>
 <style>
 .stat-card { display:flex; align-items:center; gap:1rem; background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:1.25rem; box-shadow:var(--shadow-sm); }
 .stat-icon { width:48px; height:48px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:1.25rem; }

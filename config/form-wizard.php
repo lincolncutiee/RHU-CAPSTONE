@@ -3,7 +3,7 @@
  * Patient Forms Module — official RHU paper form sequence.
  *
  * Paper relationships (for future printing):
- *   Page 1 PKRF  — independent (half-page, lengthwise)
+ *   Page 1 PCSF  — independent (Legal portrait)
  *   Page 2 ITR   — front of consultation paper
  *   Page 3 PER   — back of consultation paper
  *   Page 4 History — front of history paper
@@ -21,14 +21,14 @@ $yesNo = ['' => '—', 'Yes' => 'Yes', 'No' => 'No'];
 return [
     'pages' => [
 
-        // ── Page 1: PKRF (independent form) ─────────────────────
+        // ── Page 1: PCSF (independent form) ─────────────────────
         [
-            'id'          => 'pkrf',
-            'title'       => 'PhilHealth Konsulta Registration Form (PKRF)',
-            'short_title' => 'PhilHealth Konsulta Registration Form (PKRF)',
-            'subtitle'    => 'Independent form — half-page (lengthwise)',
+            'id'          => 'pcsf',
+            'title'       => 'PhilHealth Primary Care Selection Form (PCSF)',
+            'short_title' => 'PhilHealth Primary Care Selection Form (PCSF)',
+            'subtitle'    => 'Independent form — Legal portrait',
             'field_group' => 'it',
-            'paper'       => ['type' => 'independent', 'size' => 'half-lengthwise'],
+            'paper'       => ['type' => 'independent', 'size' => 'legal-portrait'],
             'sections'    => [
                 [
                     'title'  => 'Beneficiary Information',
@@ -36,8 +36,9 @@ return [
                         ['name' => 'philhealth_no', 'label' => 'PIN', 'type' => 'text'],
                         ['name' => 'last_name', 'label' => 'Last Name', 'type' => 'text'],
                         ['name' => 'first_name', 'label' => 'First Name', 'type' => 'text'],
-                        ['name' => 'pkrf_kpp_1st', 'label' => '1st Choice KPP', 'type' => 'text', 'extended' => true],
-                        ['name' => 'pkrf_registration_date', 'label' => 'Registration Date', 'type' => 'date', 'extended' => true],
+                        ['name' => 'pcsf_pcc_1st', 'label' => '1st Choice PCC', 'type' => 'text', 'extended' => true],
+                        ['name' => 'pcsf_date', 'label' => 'Form Date', 'type' => 'date', 'extended' => true],
+                        ['name' => 'pcsf_email', 'label' => 'Email Address', 'type' => 'text', 'extended' => true],
                     ],
                 ],
             ],
@@ -238,3 +239,4 @@ return [
     /** Doctor primary page (ITR) */
     'doctor_primary_page' => 'itr',
 ];
+

@@ -845,3 +845,56 @@
         flex-wrap: wrap;
     }
 }
+
+/* Historical records — same visit accordion layout, no workflow status */
+.emr-historical-accordion .emr-historical-label {
+    color: #0d6efd;
+}
+
+.emr-historical-accordion .emr-visit-btn-meta {
+    gap: 0.5rem;
+}
+
+.emr-historical-form-card .emr-visit-form-icon.is-ocr {
+    background: #e8f4fd;
+    color: #0d6efd;
+}
+
+.emr-historical-highlights {
+    margin-bottom: 1rem;
+}
+
+.emr-followups-section .emr-section-head {
+    margin-bottom: 1rem;
+}
+
+.emr-followup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.emr-followup-card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    background: #fff;
+}
+
+.emr-followup-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
+}
+
+.emr-followup-instructions {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin: 0 0 0.65rem;
+}
+
+.emr-followup-msgs {
+    font-size: 0.78rem;
+}

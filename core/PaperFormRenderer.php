@@ -7,11 +7,16 @@
  */
 
 require_once __DIR__ . '/Permissions.php';
+require_once __DIR__ . '/FormTemplate.php';
 
 class PaperFormRenderer
 {
     private static bool $layoutTestMode = false;
     private static bool $newConsultationMode = false;
+    private static string $currentPageId = '';
+
+    /** @var array<string, array<string, bool>>|null */
+    private static ?array $requiredByPage = null;
 
     /** @var array<string, bool> */
     private static array $loggedFieldKeys = [];
@@ -140,6 +145,7 @@ class PaperFormRenderer
     public static function renderPage(string $pageId, string $role, bool $lockRecords = false): string
     {
         $role = Permissions::normalizeRole($role);
+        self::$currentPageId = $pageId;
         $path = __DIR__ . '/../forms/paper/' . $pageId . '.php';
         if (!file_exists($path)) {
             return '<div class="paper-sheet"><p class="text-danger">Form layout not found.</p></div>';
@@ -155,7 +161,193 @@ class PaperFormRenderer
 
         ob_start();
         include $path;
-        return ob_get_clean();
+        $html = ob_get_clean();
+        if (FormTemplate::isInlineEdit()) {
+            $html = FormTemplate::augmentInlineEditableHtml($html, $pageId);
+        } else {
+            $html = FormTemplate::applyStaticTemplateCopy($html, $pageId);
+        }
+        self::$currentPageId = '';
+
+        return $html;
+    }
+
+    /** Small caption under fields (admin-editable). */
+    public static function sublabel(string $key, string $default): string
+    {
+        return '<span class="pf-sublabel">' . self::text($key, $default) . '</span>';
+    }
+
+    /** @return array<string, array<string, bool>> */
+    private static function requiredByPage(): array
+    {
+        if (self::$requiredByPage !== null) {
+            return self::$requiredByPage;
+        }
+
+        $rules = require __DIR__ . '/../config/form-completeness.php';
+        $pageRules = [
+            'pcsf'       => ['pcsf'],
+            'itr'        => ['itr'],
+            'enrollment' => ['enrollment'],
+            'history'    => ['past_medical_history', 'past_surgical_history', 'family_history'],
+            'personal'   => ['personal_social_history', 'ncd_assessment', 'photo_consent'],
+            'ekas'       => ['ekas'],
+            'epress'     => ['epress'],
+        ];
+
+        $map = [];
+        foreach ($pageRules as $pageId => $keys) {
+            $fields = [];
+            foreach ($keys as $key) {
+                $rule = $rules[$key] ?? [];
+                foreach (['patient', 'treatment', 'extended', 'patient_consent'] as $bucket) {
+                    foreach ($rule[$bucket] ?? [] as $field) {
+                        $fields[(string) $field] = true;
+                    }
+                }
+            }
+            $map[$pageId] = $fields;
+        }
+
+        self::$requiredByPage = $map;
+        return $map;
+    }
+
+    public static function isFieldRequired(string $fieldName, bool $extended = false): bool
+    {
+        if ($fieldName === '' || self::$currentPageId === '') {
+            return false;
+        }
+
+        $map = self::requiredByPage()[self::$currentPageId] ?? [];
+        return !empty($map[$fieldName]);
+    }
+
+    /**
+     * Paper form label with required (*) or optional hint.
+     *
+     * @param string      $text      Label text (plain; use labelHtml for markup)
+     * @param string|null $fieldName Field name for requirement lookup
+     * @param bool|null   $required  Force required/optional; null = auto from config
+     */
+    public static function label(string $text, ?string $fieldName = null, ?bool $required = null): string
+    {
+        $pageId = self::$currentPageId !== '' ? self::$currentPageId : null;
+        $text = FormTemplate::fieldLabel($text, $fieldName, $pageId);
+        $suffix = self::labelSuffix($fieldName, $required);
+        $inner = htmlspecialchars($text, ENT_QUOTES, 'UTF-8') . $suffix;
+        if (FormTemplate::isInlineEdit() && $fieldName !== null && $pageId !== null) {
+            $key = FormTemplate::fieldLabelKey($pageId, $fieldName);
+            $inner = FormTemplate::wrapInlineEditable($key, htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) . $suffix;
+        }
+        return '<span class="pf-label">' . $inner . '</span>';
+    }
+
+    /** Label allowing safe inline HTML (e.g. &lt;br&gt;) in $html. */
+    public static function labelHtml(string $html, ?string $fieldName = null, ?bool $required = null, string $extraClass = '', string $extraStyle = ''): string
+    {
+        $class = trim('pf-label ' . $extraClass);
+        $style = $extraStyle !== '' ? ' style="' . htmlspecialchars($extraStyle) . '"' : '';
+        $suffix = self::labelSuffix($fieldName, $required);
+        $pageId = self::$currentPageId !== '' ? self::$currentPageId : null;
+        $inner = $html;
+        if ($fieldName !== null && $pageId !== null) {
+            $key = FormTemplate::fieldLabelKey($pageId, $fieldName);
+            $plainDefault = trim(strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html)));
+            $text = FormTemplate::get($key, $plainDefault);
+            if (FormTemplate::isInlineEdit()) {
+                $inner = FormTemplate::wrapInlineEditable($key, htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
+            } else {
+                $inner = nl2br(htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
+            }
+        }
+        return '<span class="' . htmlspecialchars($class) . '"' . $style . '>' . $inner . $suffix . '</span>';
+    }
+
+    /** Admin-editable static line (plain text). */
+    public static function text(string $key, string $default): string
+    {
+        $value = FormTemplate::get($key, $default);
+        if (FormTemplate::isInlineEdit()) {
+            return FormTemplate::wrapInlineEditable($key, htmlspecialchars($value, ENT_QUOTES, 'UTF-8'));
+        }
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    public static function titleSub(string $default): string
+    {
+        $pageId = self::$currentPageId;
+        $key = 'page.' . $pageId . '.title_sub';
+        return '<div class="pf-title-sub">' . self::text($key, $default) . '</div>';
+    }
+
+    public static function titleMain(string $default): string
+    {
+        $pageId = self::$currentPageId;
+        $key = 'page.' . $pageId . '.title';
+        return '<div class="pf-title-main">' . self::text($key, $default) . '</div>';
+    }
+
+    public static function instructionsBlock(string $key, string $plainDefault): string
+    {
+        $text = FormTemplate::get($key, $plainDefault);
+        if (FormTemplate::isInlineEdit()) {
+            return '<p class="pf-instructions">' . FormTemplate::wrapInlineEditable($key, htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) . '</p>';
+        }
+        return '<p class="pf-instructions">' . nl2br(htmlspecialchars($text, ENT_QUOTES, 'UTF-8')) . '</p>';
+    }
+
+    public static function para(string $key, string $default): string
+    {
+        return '<p>' . self::text($key, $default) . '</p>';
+    }
+
+    public static function th(string $key, string $default): string
+    {
+        return '<th>' . self::text($key, $default) . '</th>';
+    }
+
+    public static function sigLabel(string $key, string $default): string
+    {
+        return '<div class="pf-sig-label">' . self::text($key, $default) . '</div>';
+    }
+
+    private static function optionLabelHtml(string $fieldName, string $value, string $label): string
+    {
+        $pageId = self::$currentPageId;
+        if ($pageId === '') {
+            return htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+        }
+        $key = FormTemplate::fieldOptionKey($pageId, $fieldName, $value);
+        $text = FormTemplate::get($key, $label);
+        if (FormTemplate::isInlineEdit()) {
+            return FormTemplate::wrapInlineEditable($key, htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
+        }
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+
+    private static function labelSuffix(?string $fieldName, ?bool $required): string
+    {
+        if ($fieldName === null) {
+            return '';
+        }
+
+        $isRequired = $required ?? self::isFieldRequired($fieldName);
+        if ($isRequired) {
+            return '<span class="pf-req" aria-hidden="true">*</span>';
+        }
+
+        return '<span class="pf-opt">(optional)</span>';
+    }
+
+    private static function resolveRequiredFlag(string $name, bool $extended, bool $required): bool
+    {
+        if ($required) {
+            return true;
+        }
+
+        return self::isFieldRequired($name, $extended);
     }
 
     /**
@@ -283,6 +475,7 @@ class PaperFormRenderer
         $n = self::name($name, $extended);
         $ext = $extended ? ' data-extended="1"' : '';
         $phText = self::placeholderForGroup($group, $placeholder, $isAuto);
+        $required = self::resolveRequiredFlag($name, $extended, $required);
         $req = ($required && $state['editable'] && !self::$layoutTestMode) ? ' required' : '';
         return '<input type="' . htmlspecialchars($type) . '" name="' . $n . '" class="pf-line ' . $extraClass . '" '
             . self::fg($group, $role, $state['editable'], $state['reason']) . $ext . self::profileAttr($name, $extended)
@@ -315,8 +508,9 @@ class PaperFormRenderer
         $n = self::name($name, $extended);
         $ext = $extended ? ' data-extended="1"' : '';
         $id = $id ?: 'cb_' . preg_replace('/[^a-z0-9]/i', '_', $name . '_' . $value);
+        $labelHtml = self::optionLabelHtml($name, $value, $label);
         return '<label class="pf-check"><input type="checkbox" name="' . $n . '" value="' . htmlspecialchars($value) . '" id="' . htmlspecialchars($id) . '" '
-            . self::fg($group, $role, $state['editable'], $state['reason']) . $ext . ' ' . $state['attrs'] . '><span>' . htmlspecialchars($label) . '</span></label>';
+            . self::fg($group, $role, $state['editable'], $state['reason']) . $ext . ' ' . $state['attrs'] . '><span>' . $labelHtml . '</span></label>';
     }
 
     public static function radio(string $name, string $value, string $label, string $role, string $group, bool $lockRecords, bool $extended = false, string $id = ''): string
@@ -325,9 +519,10 @@ class PaperFormRenderer
         $n = self::name($name, $extended);
         $ext = $extended ? ' data-extended="1"' : '';
         $id = $id ?: 'rd_' . preg_replace('/[^a-z0-9]/i', '_', $name . '_' . $value);
+        $labelHtml = self::optionLabelHtml($name, $value, $label);
         return '<label class="pf-radio"><input type="radio" name="' . $n . '" value="' . htmlspecialchars($value) . '" id="' . htmlspecialchars($id) . '" '
             . self::fg($group, $role, $state['editable'], $state['reason']) . $ext . self::profileAttr($name, $extended)
-            . ' ' . $state['attrs'] . '><span>' . htmlspecialchars($label) . '</span></label>';
+            . ' ' . $state['attrs'] . '><span>' . $labelHtml . '</span></label>';
     }
 
     public static function select(
@@ -345,6 +540,7 @@ class PaperFormRenderer
         $n = self::name($name, $extended);
         $ext = $extended ? ' data-extended="1"' : '';
         $cls = trim('pf-select ' . $extraClass);
+        $required = self::resolveRequiredFlag($name, $extended, $required);
         $req = ($required && $state['editable'] && !self::$layoutTestMode) ? ' required' : '';
         $html = '<select name="' . $n . '" class="' . htmlspecialchars($cls) . '" '
             . self::fg($group, $role, $state['editable'], $state['reason']) . $ext
@@ -411,17 +607,17 @@ class PaperFormRenderer
                 . '</div>';
         }
 
-        if ($layout === 'pkrf') {
-            // PKRF: three columns + official sublabels (old layout)
+        if ($layout === 'pcsf') {
+            // PCSF beneficiary / confirmation address — three columns + official sublabels
             return '<div class="pf-magallanes-address" data-magallanes-address>'
                 . '<table class="pf-table" style="margin:0;"><tr>'
                 . '<td style="width:33%;border:none;padding:0 4px 0 0;">' . $barangaySelect . '</td>'
                 . '<td style="width:33%;border:none;padding:0 4px;">' . $municipality . '</td>'
                 . '<td style="width:34%;border:none;padding:0 0 0 4px;">' . $province . '</td>'
                 . '</tr><tr>'
-                . '<td style="border:none;"><span class="pf-sublabel">(BARANGAY/TOWN)</span></td>'
-                . '<td style="border:none;"><span class="pf-sublabel">(MUNICIPALITY/CITY)</span></td>'
-                . '<td style="border:none;"><span class="pf-sublabel">(PROVINCE)</span></td>'
+                . '<td style="border:none;">' . self::sublabel('shared.sublabel.barangay_town', '(BARANGAY/TOWN)') . '</td>'
+                . '<td style="border:none;">' . self::sublabel('shared.sublabel.municipality_city', '(MUNICIPALITY/CITY)') . '</td>'
+                . '<td style="border:none;">' . self::sublabel('shared.sublabel.province', '(PROVINCE)') . '</td>'
                 . '</tr></table>'
                 . '<div style="display:none;">' . $composed . '</div>'
                 . '</div>';
@@ -451,11 +647,20 @@ class PaperFormRenderer
 
     public static function sectionBar(string $title): string
     {
+        $pageId = self::$currentPageId;
+        if (FormTemplate::isInlineEdit() && $pageId !== '') {
+            $key = FormTemplate::sectionTitleKey($pageId, $title);
+            $resolved = FormTemplate::get($key, $title);
+            $inner = FormTemplate::wrapInlineEditable($key, htmlspecialchars($resolved, ENT_QUOTES, 'UTF-8'));
+            return '<div class="pf-section-bar">' . $inner . '</div>';
+        }
         return '<div class="pf-section-bar">' . htmlspecialchars($title) . '</div>';
     }
 
     public static function formFooter(string $text): string
     {
-        return '<div class="pf-form-footer">' . htmlspecialchars($text) . '</div>';
+        $pageId = self::$currentPageId;
+        $key = 'page.' . $pageId . '.footer';
+        return '<div class="pf-form-footer">' . self::text($key, $text) . '</div>';
     }
 }

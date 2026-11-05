@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const FIELD_LABELS = {
         philhealth_no: 'PhilHealth PIN',
         family_serial_number: 'Family Serial Number',
-        pkrf_registration_date: 'PKRF Registration Date',
+        pcsf_date: 'PCSF Form Date',
         date_of_consultation: 'Date of Consultation',
         chief_complaints: 'Chief Complaints',
         mode_of_transaction: 'Mode of Transaction',
@@ -1056,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getReviewChipLabel(pane, index) {
         const id = pane?.dataset.pageId || '';
         const map = {
-            pkrf: 'PKRF',
+            pcsf: 'PCSF',
             itr: 'ITR',
             enrollment: 'Enrollment',
             history: 'Medical History',
@@ -1272,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!pageId) {
                 const label = (issue.form || '').toLowerCase();
-                if (label.includes('philhealth') || label.includes('pkrf')) pageId = 'pkrf';
+                if (label.includes('philhealth') || label.includes('pcsf') || label.includes('primary care')) pageId = 'pcsf';
                 else if (label.includes('individual treatment')) pageId = 'itr';
                 else if (label.includes('epress') || label.includes('prescription')) pageId = 'epress';
                 else if (label.includes('enrollment')) pageId = 'enrollment';

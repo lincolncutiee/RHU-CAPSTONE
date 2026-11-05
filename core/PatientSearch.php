@@ -99,6 +99,13 @@ class PatientSearch
             $types .= 'i';
         }
 
+        $showArchivedOnly = !empty($filters['status']) && $filters['status'] === WORKFLOW_ARCHIVED;
+        if ($showArchivedOnly) {
+            $sql .= ' AND p.is_archived = 1';
+        } else {
+            $sql .= ' AND p.is_archived = 0';
+        }
+
         return ['sql' => $sql, 'params' => $params, 'types' => $types];
     }
 

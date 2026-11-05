@@ -1,0 +1,516 @@
+/* Standalone print document — single A4 portrait page */
+
+@page {
+    size: A4 portrait;
+    margin: 8mm 9mm 10mm;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.rpt-print-body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 9pt;
+    color: #0f172a;
+    background: #e2e8f0;
+    line-height: 1.3;
+}
+
+.rpt-print-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    background: #fff;
+    border-bottom: 1px solid #cbd5e1;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.rpt-print-toolbar__title {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+.rpt-print-toolbar__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: #1a6fc4;
+    color: #fff;
+}
+
+.btn-outline-secondary {
+    background: #fff;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+.rpt-print-doc {
+    margin: 1rem auto 2rem;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* Screen preview — enlarged for readability (print/PDF stays A4) */
+@media screen {
+    .rpt-print-doc.rpt-print-doc--one-page {
+        width: min(1180px, 98vw);
+        max-width: 1180px;
+        font-size: 11.5pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-page--single {
+        padding: 12mm 14mm 14mm;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-logo {
+        width: 56px;
+        height: 56px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-header h1 {
+        font-size: 17pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-subtitle {
+        font-size: 10.5pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-header__meta {
+        font-size: 10pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-summary-item {
+        padding: 8px 6px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-summary-item .val {
+        font-size: 16pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-summary-item .lbl {
+        font-size: 9pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-section-title {
+        font-size: 11pt;
+        margin-bottom: 6px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-chart--sm svg {
+        max-height: 140px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-chart--bar svg {
+        max-height: 200px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-mini-donut {
+        min-height: 100px;
+        padding: 8px 10px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-donut-wrap {
+        width: 110px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-donut-wrap svg {
+        width: 110px;
+        height: 110px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-legend {
+        font-size: 10pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-legend--compact th,
+    .rpt-print-doc--one-page .rpt-print-legend--compact td {
+        padding: 4px 6px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-sig__line {
+        height: 28px;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-sig__name {
+        font-size: 10.5pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-page-foot {
+        font-size: 9pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-row {
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+}
+
+.rpt-print-doc--one-page .rpt-print-page--single {
+    padding: 6mm 7mm 8mm;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.rpt-print-header--compact {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1.5px solid #0f172a;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+}
+
+.rpt-print-header h1 {
+    margin: 0;
+    font-size: 12pt;
+    font-weight: 700;
+}
+
+.rpt-print-subtitle {
+    margin: 1px 0 0;
+    font-size: 8pt;
+    color: #64748b;
+}
+
+.rpt-print-header__meta {
+    text-align: right;
+    font-size: 7.5pt;
+    color: #475569;
+}
+
+.rpt-print-header__meta p {
+    margin: 0;
+    line-height: 1.35;
+}
+
+.rpt-print-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+.rpt-print-summary-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.rpt-print-summary-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 4px 3px;
+    text-align: center;
+    background: #f8fafc;
+}
+
+.rpt-print-summary-item .val {
+    display: block;
+    font-size: 11pt;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.rpt-print-summary-item .lbl {
+    display: block;
+    font-size: 6.5pt;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.rpt-print-row {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.rpt-print-row--2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.rpt-print-block {
+    min-width: 0;
+}
+
+.rpt-print-section-title {
+    font-size: 8pt;
+    font-weight: 700;
+    margin: 0 0 3px;
+    color: #0f172a;
+    border-left: 2px solid #1a6fc4;
+    padding-left: 5px;
+}
+
+.rpt-print-chart {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 3px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.rpt-print-chart--sm svg {
+    max-height: 72px;
+}
+
+.rpt-print-chart--bar svg {
+    max-height: 100px;
+}
+
+.rpt-print-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.rpt-print-mini-donut {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 4px 6px;
+    min-height: 72px;
+}
+
+.rpt-print-donut-wrap {
+    flex-shrink: 0;
+    width: 72px;
+}
+
+.rpt-print-donut-wrap svg {
+    width: 72px;
+    height: 72px;
+}
+
+.rpt-print-legend {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7pt;
+    flex: 1;
+}
+
+.rpt-print-legend--compact th,
+.rpt-print-legend--compact td {
+    border: 1px solid #e2e8f0;
+    padding: 2px 4px;
+}
+
+.rpt-print-legend th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+
+.rpt-print-legend td:nth-child(2),
+.rpt-print-legend td:nth-child(3),
+.rpt-print-legend th:nth-child(2),
+.rpt-print-legend th:nth-child(3) {
+    text-align: right;
+    width: 14%;
+}
+
+.rpt-print-muted {
+    font-size: 7pt;
+    color: #64748b;
+    margin: 0;
+    align-self: center;
+}
+
+.rpt-print-signatures--compact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 6px;
+    padding-top: 4px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.rpt-print-sig__line {
+    border-bottom: 1px solid #0f172a;
+    height: 22px;
+    margin-bottom: 2px;
+}
+
+.rpt-print-sig__label {
+    margin: 0;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+}
+
+.rpt-print-sig__name {
+    margin: 2px 0 0;
+    font-weight: 600;
+    font-size: 8pt;
+}
+
+.rpt-print-page-foot {
+    margin-top: 4px;
+    padding-top: 3px;
+    font-size: 6.5pt;
+    color: #94a3b8;
+    text-align: center;
+    border-top: 1px solid #f1f5f9;
+}
+
+@media print {
+    body.rpt-print-body {
+        background: #fff;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .rpt-print-doc {
+        margin: 0;
+        box-shadow: none;
+        max-width: none;
+        width: auto;
+        font-size: 9pt;
+    }
+
+    .rpt-print-doc--one-page .rpt-print-page--single {
+        padding: 0;
+    }
+
+    .rpt-print-page--single,
+    .rpt-print-block,
+    .rpt-print-row,
+    .rpt-print-signatures--compact {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+}
+
+.rpt-print-forecast-note {
+    margin: 0.25rem 0 0;
+    font-size: 7pt;
+    line-height: 1.25;
+}
+
+.rpt-print-doc--summary {
+    max-width: 1180px;
+}
+
+.rpt-print-doc--summary .rpt-print-page {
+    padding: 1rem 1.15rem 1.25rem;
+}
+
+.rpt-print-lead {
+    margin: 0 0 0.75rem;
+    font-size: 8.5pt;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.rpt-print-intro-box {
+    margin: 0 0 0.75rem;
+    padding: 0.55rem 0.65rem;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    color: #0f172a;
+}
+
+.rpt-print-intro-box p {
+    margin: 0;
+}
+
+.rpt-print-narrative {
+    margin: 0.25rem 0 0;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    color: #334155;
+}
+
+.rpt-print-block--narrative {
+    margin-bottom: 0.45rem;
+}
+
+.rpt-print-h3 {
+    margin: 0.65rem 0 0.25rem;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.rpt-print-summary-grid--inline {
+    margin-top: 0.25rem;
+}
+
+.rpt-print-summary-item--sm {
+    padding: 0.35rem 0.5rem;
+}
+
+.rpt-print-summary-item--sm .val {
+    font-size: 1.05rem;
+}
+
+.rpt-print-draft-note {
+    margin: 0 0 0.5rem;
+    font-size: 7.5pt;
+}
+
+.rpt-print-legend--draft {
+    width: 100%;
+    font-size: 7.5pt;
+}
+
+.rpt-print-legend--draft th,
+.rpt-print-legend--draft td {
+    padding: 0.2rem 0.35rem;
+    vertical-align: top;
+}
+
+.rpt-print-legend--draft td:last-child {
+    max-width: 14rem;
+    word-break: break-word;
+}
+
+.text-end {
+    text-align: right;
+}
+
+@media (max-width: 720px) {
+    .rpt-print-header--compact {
+        grid-template-columns: 1fr;
+    }
+
+    .rpt-print-header__meta {
+        text-align: left;
+    }
+
+    .rpt-print-row--2 {
+        grid-template-columns: 1fr;
+    }
+
+    .rpt-print-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -13,7 +13,7 @@ return [
      * Never reorder. Empty forms still print blank.
      */
     'form_print_order' => [
-        'pkrf',
+        'pcsf',
         'itr',
         'enrollment',
         'history',
@@ -27,10 +27,10 @@ return [
      * Never pack multiple A4 sheets into one preview: Chrome can crash (STATUS_BREAKPOINT).
      */
     'official_documents' => [
-        'pkrf' => [
-            'label'       => '1. PhilHealth Konsulta Registration Form (PKRF)',
+        'pcsf' => [
+            'label'       => '1. PhilHealth Primary Care Selection Form (PCSF)',
             'hint'        => 'Legal Portrait · 1 sheet',
-            'forms'       => ['pkrf'],
+            'forms'       => ['pcsf'],
             'layout'      => 'legal-portrait',
             'page_size'   => 'legal',
             'orientation' => 'portrait',
@@ -93,7 +93,7 @@ return [
      * Per-form default layout (used when inferring from ?forms=).
      */
     'form_layouts' => [
-        'pkrf'        => 'legal-portrait',
+        'pcsf'        => 'legal-portrait',
         'itr'         => 'a4-portrait',
         'enrollment'  => 'a4-portrait',
         'history'     => 'a4-portrait',
@@ -104,10 +104,10 @@ return [
 
     /** Legacy single-form / combo bundles (consultation.php quick buttons). */
     'bundles' => [
-        'pkrf' => [
-            'label'  => 'Print PKRF',
-            'forms'  => ['pkrf'],
-            'title'  => 'PhilHealth Konsulta Registration Form (PKRF)',
+        'pcsf' => [
+            'label'  => 'Print PCSF',
+            'forms'  => ['pcsf'],
+            'title'  => 'PhilHealth Primary Care Selection Form (PCSF)',
             'layout' => 'legal-portrait',
         ],
         'itr' => [
@@ -165,13 +165,13 @@ return [
             'layout' => 'a4-portrait',
         ],
         /**
-         * Full set — preview stacks A4 forms; PKRF/Legal and landscape
+         * Full set — preview stacks A4 forms; PCSF/Legal and landscape
          * half-half should be printed via official_documents jobs instead.
          * Prefer Print module “Select all” for correct paper per form.
          */
         'all' => [
             'label'  => 'Print All Forms',
-            'forms'  => ['pkrf', 'itr', 'enrollment', 'history', 'personal', 'ekas', 'epress'],
+            'forms'  => ['pcsf', 'itr', 'enrollment', 'history', 'personal', 'ekas', 'epress'],
             'title'  => 'Complete RHU Form Set',
             'layout' => 'a4-portrait',
         ],

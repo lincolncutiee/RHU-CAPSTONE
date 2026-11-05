@@ -46,14 +46,14 @@ class ItPrintForms
     }
 
     /**
-     * Canonical RHU print order (PKRF → … → EPRESS).
+     * Canonical RHU print order (PCSF → … → EPRESS).
      *
      * @return list<string>
      */
     public static function formPrintOrder(): array
     {
         $order = self::config()['form_print_order'] ?? [
-            'pkrf', 'itr', 'enrollment', 'history', 'personal', 'ekas', 'epress',
+            'pcsf', 'itr', 'enrollment', 'history', 'personal', 'ekas', 'epress',
         ];
         return array_values(array_map('strval', $order));
     }
@@ -102,7 +102,7 @@ class ItPrintForms
         if ($ids === ['ekas', 'epress'] || $ids === ['epress', 'ekas']) {
             return 'a4-landscape-half';
         }
-        if ($ids === ['pkrf']) {
+        if ($ids === ['pcsf']) {
             return 'legal-portrait';
         }
         if (count($ids) === 1) {
@@ -448,7 +448,7 @@ class ItPrintForms
 
     /**
      * Official Print-module documents in canonical form order
-     * (PKRF → ITR → Enrollment → History → Personal → EKAS+EPRESS).
+     * (PCSF → ITR → Enrollment → History → Personal → EKAS+EPRESS).
      *
      * @return list<array<string,mixed>>
      */

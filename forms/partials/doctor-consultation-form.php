@@ -160,6 +160,56 @@ $ro = $canSubmitConsultation ? '' : 'readonly';
         <label for="doctor_follow_up">Follow-up Instructions</label>
         <textarea class="form-control" id="doctor_follow_up" name="extended[doctor_follow_up]" rows="3" <?= $ro ?>></textarea>
       </div>
+
+      <div class="dc-followup-card mt-3">
+        <div class="dc-followup-card__head">
+          <h3 class="dc-followup-card__title"><i class="bi bi-calendar2-check"></i> Follow-up check-up</h3>
+          <p class="dc-followup-card__sub">Schedule a return visit. Reminders use <strong>email</strong> (no SMS load) when enabled in Admin.</p>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-4">
+            <label class="form-label" for="follow_up_date">Follow-up date</label>
+            <input type="date" class="form-control" id="follow_up_date" name="follow_up_date" <?= $ro ?>>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label" for="patient_email">Patient email</label>
+            <input type="email" class="form-control" id="patient_email" name="patient_email" placeholder="name@gmail.com" <?= $ro ?>>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <div class="form-check dc-followup-remind">
+              <input class="form-check-input" type="checkbox" value="1" id="follow_up_remind" name="follow_up_remind" <?= $canSubmitConsultation ? '' : 'disabled' ?>>
+              <label class="form-check-label" for="follow_up_remind">Send email reminder</label>
+            </div>
+          </div>
+        </div>
+        <div class="row g-2 mt-1 align-items-center">
+          <div class="col-md-6">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="1" id="reminder_email_opt_in" name="reminder_email_opt_in" <?= $canSubmitConsultation ? '' : 'disabled' ?>>
+              <label class="form-check-label" for="reminder_email_opt_in">Patient consents to email reminders</label>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label visually-hidden" for="follow_up_channel">Channel</label>
+            <input type="hidden" id="follow_up_channel" name="follow_up_channel" value="email">
+            <details class="dc-followup-sms-details">
+              <summary class="small text-muted">Optional: paid SMS (mobile <?= htmlspecialchars($summaryContact) ?>)</summary>
+              <div class="mt-2">
+                <select class="form-select form-select-sm" id="follow_up_channel_sms_extra" <?= $canSubmitConsultation ? '' : 'disabled' ?>>
+                  <option value="email">Email only (recommended)</option>
+                  <option value="both">Email + SMS</option>
+                  <option value="sms">SMS only (has cost)</option>
+                </select>
+                <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" value="1" id="reminder_sms_opt_in" name="reminder_sms_opt_in" <?= $canSubmitConsultation ? '' : 'disabled' ?>>
+                  <label class="form-check-label" for="reminder_sms_opt_in">Patient consents to SMS reminders</label>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+        <p class="dc-followup-hint mb-0"><i class="bi bi-envelope"></i> Email is sent by the daily job after <strong>Admin → Messaging</strong> SMTP is set up. SMS needs a paid gateway.</p>
+      </div>
     </section>
 
     <div class="dc-actions">

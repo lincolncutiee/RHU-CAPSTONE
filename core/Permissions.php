@@ -1,10 +1,12 @@
 <?php
 
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/Session.php';
 
 class Permissions
 {
     private static ?array $matrix = null;
+    private static ?array $rolePermissionConfig = null;
 
     /** Temporary audit log — keep false in production. */
     public static bool $debugLogging = false;
@@ -43,7 +45,8 @@ class Permissions
             'it' => ROLE_IT,
             'it department' => ROLE_IT,
             'it review' => ROLE_IT,
-            'admin' => ROLE_IT,
+            'system_administrator' => ROLE_SYSTEM_ADMIN,
+            'system administrator' => ROLE_SYSTEM_ADMIN,
             'receptionist' => ROLE_RECEPTIONIST,
             'pharmacy' => ROLE_PHARMACY,
             'pharmacist' => ROLE_PHARMACY,
@@ -52,23 +55,151 @@ class Permissions
         return $aliases[$role] ?? $role;
     }
 
-    public static function canEdit(string $role, string $fieldGroup): bool
+    /** @return 'none'|'view'|'edit' */
+    public static function resolveAccessLevel(string $role, string $fieldGroup, ?int $userId = null): string
     {
         $role = self::normalizeRole($role);
         $group = self::normalizeGroup($fieldGroup);
+        $override = self::userPrivilegeOverride($group, $userId);
+
+        if ($override === 'none') {
+            return 'none';
+        }
+        if ($override === 'view') {
+            return self::capFieldGroupLevel($group, 'view');
+        }
+        if ($override === 'edit') {
+            return self::capFieldGroupLevel($group, 'edit');
+        }
+
         $config = self::matrix()[$role] ?? null;
         if (!$config) {
-            if (self::$debugLogging) {
-                error_log("[RHU_PERM] canEdit FAIL unknown role='{$role}' group='{$group}'");
-            }
-            return false;
+            return 'none';
         }
-        return in_array($group, $config['editable'], true);
+        if (in_array($group, $config['editable'], true)) {
+            return self::capFieldGroupLevel($group, 'edit');
+        }
+        if (in_array($group, $config['readonly'], true)) {
+            return self::capFieldGroupLevel($group, 'view');
+        }
+        return 'none';
     }
 
-    public static function isReadonly(string $role, string $fieldGroup): bool
+    /** @return 'none'|'view'|'edit' */
+    private static function capFieldGroupLevel(string $group, string $level): string
     {
-        return !self::canEdit($role, $fieldGroup);
+        $caps = self::rolePermissionFieldCaps()[$group] ?? null;
+        if (!$caps) {
+            return $level;
+        }
+        if ($level === 'edit') {
+            $editKey = $caps['edit'] ?? null;
+            if ($editKey && self::can($editKey)) {
+                return 'edit';
+            }
+            $viewKey = $caps['view'] ?? null;
+            if ($viewKey && self::can($viewKey)) {
+                return 'view';
+            }
+            return 'none';
+        }
+        $viewKey = $caps['view'] ?? ($caps['edit'] ?? null);
+        if ($viewKey && self::can($viewKey)) {
+            return 'view';
+        }
+        return 'none';
+    }
+
+    /** @return array<string, array{edit?: string, view?: string}> */
+    private static function rolePermissionFieldCaps(): array
+    {
+        if (self::$rolePermissionConfig === null) {
+            self::$rolePermissionConfig = require __DIR__ . '/../config/role-permissions.php';
+        }
+        return self::$rolePermissionConfig['field_group_caps'] ?? [];
+    }
+
+    public static function can(string $permissionKey): bool
+    {
+        $permissionKey = trim($permissionKey);
+        if ($permissionKey === '') {
+            return false;
+        }
+
+        $role = self::normalizeRole((string) Session::get('role'));
+        if ($role === ROLE_SYSTEM_ADMIN && str_starts_with($permissionKey, 'admin.')) {
+            return true;
+        }
+
+        $sessionPerms = Session::get('role_permissions');
+        if (is_array($sessionPerms) && array_key_exists($permissionKey, $sessionPerms)) {
+            return !empty($sessionPerms[$permissionKey]);
+        }
+
+        if (self::$rolePermissionConfig === null) {
+            self::$rolePermissionConfig = require __DIR__ . '/../config/role-permissions.php';
+        }
+        $roleDefaults = self::$rolePermissionConfig['defaults'][$role] ?? [];
+        return !empty($roleDefaults[$permissionKey]);
+    }
+
+    public static function requireCan(string $permissionKey): void
+    {
+        if (!self::can($permissionKey)) {
+            http_response_code(403);
+            die('Access denied. You do not have permission for this action.');
+        }
+    }
+
+    /** @param list<string> $permissionKeys */
+    public static function requireCanAny(array $permissionKeys): void
+    {
+        foreach ($permissionKeys as $key) {
+            if (self::can($key)) {
+                return;
+            }
+        }
+        http_response_code(403);
+        die('Access denied. You do not have permission for this action.');
+    }
+
+    public static function refreshRolePermissionsInSession(mysqli $conn, ?string $roleSlug = null): void
+    {
+        require_once __DIR__ . '/RolePermissions.php';
+        $role = Permissions::normalizeRole($roleSlug ?? (string) Session::get('role'));
+        Session::set('role_permissions', RolePermissions::loadForSession($conn, $role));
+    }
+
+    private static function userPrivilegeOverride(string $group, ?int $userId): ?string
+    {
+        $privileges = Session::get('field_privileges');
+        if (!is_array($privileges) || empty($privileges)) {
+            return null;
+        }
+        $level = $privileges[$group] ?? 'inherit';
+        if ($level === 'inherit') {
+            return null;
+        }
+        if (in_array($level, ['none', 'view', 'edit'], true)) {
+            return $level;
+        }
+        return null;
+    }
+
+    public static function canEdit(string $role, string $fieldGroup, ?int $userId = null): bool
+    {
+        return self::resolveAccessLevel($role, $fieldGroup, $userId) === 'edit';
+    }
+
+    public static function canView(string $role, string $fieldGroup, ?int $userId = null): bool
+    {
+        $level = self::resolveAccessLevel($role, $fieldGroup, $userId);
+        return $level === 'edit' || $level === 'view';
+    }
+
+    public static function isReadonly(string $role, string $fieldGroup, ?int $userId = null): bool
+    {
+        return !self::canEdit($role, $fieldGroup, $userId);
     }
 
     /** True when the logged-in role owns this field group. */
@@ -117,7 +248,7 @@ class Permissions
             'records_consent'      => 'Patient Consent (Form 1) — Records Office',
             'records_treatment'    => 'Treatment / RHU clinical fields (Form 2) — Records Office',
             'doctor'               => 'Clinical Findings, EKAS & EPRESS — Doctor',
-            'it'                   => 'IT Department — Patient Encoding & PKRF',
+            'it'                   => 'IT Department — Patient Encoding & PCSF',
             'receptionist'         => 'Receptionist (Reserved)',
         ];
     }

@@ -40,20 +40,20 @@ function renderHistorySection(string $prefix, string $title, array $conditions, 
         </div>
         <div>
             <div class="pf-field-row">
-                <span class="pf-label">Specify Allergy:</span>
+                <?= PaperFormRenderer::label('Specify Allergy:', "{$prefix}_allergy_specify", false) ?>
                 <?= PaperFormRenderer::line("{$prefix}_allergy_specify", $role, $fg, $lockRecords, true) ?>
             </div>
             <div class="pf-field-row">
-                <span class="pf-label">Specify organ with cancer:</span>
+                <?= PaperFormRenderer::label('Specify organ with cancer:', "{$prefix}_cancer_specify", false) ?>
                 <?= PaperFormRenderer::line("{$prefix}_cancer_specify", $role, $fg, $lockRecords, true) ?>
             </div>
             <div class="pf-field-row">
-                <span class="pf-label">Specify hepatitis type:</span>
+                <?= PaperFormRenderer::label('Specify hepatitis type:', "{$prefix}_hepatitis_specify", false) ?>
                 <?= PaperFormRenderer::line("{$prefix}_hepatitis_specify", $role, $fg, $lockRecords, true) ?>
             </div>
             <div class="pf-field-row pf-inline">
                 <div class="pf-field">
-                    <span class="pf-label">Highest blood pressure:</span>
+                    <?= PaperFormRenderer::label('Highest blood pressure:', "{$prefix}_bp_systolic", false) ?>
                     <div class="pf-inline">
                         <?= PaperFormRenderer::line("{$prefix}_bp_systolic", $role, $fg, $lockRecords, true, 'text', 'pf-line', '') ?>
                         <span>/</span>
@@ -63,15 +63,15 @@ function renderHistorySection(string $prefix, string $title, array $conditions, 
                 </div>
             </div>
             <div class="pf-field-row">
-                <span class="pf-label">Specify Pulmonary Tuberculosis category:</span>
+                <?= PaperFormRenderer::label('Specify Pulmonary Tuberculosis category:', "{$prefix}_pulmonary_tb_specify", false) ?>
                 <?= PaperFormRenderer::line("{$prefix}_pulmonary_tb_specify", $role, $fg, $lockRecords, true) ?>
             </div>
             <div class="pf-field-row">
-                <span class="pf-label">Specify Extrapulmonary Tuberculosis category:</span>
+                <?= PaperFormRenderer::label('Specify Extrapulmonary Tuberculosis category:', "{$prefix}_extrapulmonary_tb_specify", false) ?>
                 <?= PaperFormRenderer::line("{$prefix}_extrapulmonary_tb_specify", $role, $fg, $lockRecords, true) ?>
             </div>
             <div class="pf-field-row">
-                <span class="pf-label">Others, please specify:</span>
+                <?= PaperFormRenderer::label('Others, please specify:', "{$prefix}_others_specify", false) ?>
                 <?= PaperFormRenderer::area("{$prefix}_others_specify", $role, $fg, $lockRecords, true, 4) ?>
             </div>
         </div>

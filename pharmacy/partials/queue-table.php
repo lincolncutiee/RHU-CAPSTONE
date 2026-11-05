@@ -10,16 +10,58 @@
 $searchQuery = $searchQuery ?? '';
 $sortBy = $sortBy ?? 'newest';
 $queueCount = count($queue);
+
+$statWaiting = 0;
+$statDispensing = 0;
+$statDispensed = 0;
+foreach ($queue as $qRow) {
+    $tone = $qRow['status_tone'] ?? '';
+    if ($tone === 'waiting') {
+        $statWaiting++;
+    } elseif ($tone === 'dispensing') {
+        $statDispensing++;
+    } elseif ($tone === 'dispensed') {
+        $statDispensed++;
+    }
+}
+
+$patientInitials = static function (string $formalName): string {
+    $parts = preg_split('/[\s,]+/', trim($formalName), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    if (count($parts) >= 2) {
+        return strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+    }
+    if (count($parts) === 1) {
+        return strtoupper(substr($parts[0], 0, 2));
+    }
+    return '?';
+};
 ?>
 <div class="ph-page ph-dashboard">
+    <div class="ph-shell">
     <header class="ph-header">
-        <div>
-            <h1 class="ph-title">Pharmacy Queue</h1>
-            <p class="ph-subtitle">Patients sent by the doctor for medicine dispensing</p>
+        <div class="ph-header-main">
+            <span class="ph-header-icon" aria-hidden="true"><i class="bi bi-capsule"></i></span>
+            <div>
+                <h1 class="ph-title">Pharmacy Queue</h1>
+                <p class="ph-subtitle">Patients sent by the doctor for medicine dispensing</p>
+            </div>
         </div>
-        <div class="ph-count">
-            <strong><?= (int) $queueCount ?></strong>
-            <?= $queueCount === 1 ? 'patient' : 'patients' ?>
+        <div class="ph-header-stats">
+            <span class="ph-stat-pill ph-stat-pill--total">
+                <strong><?= (int) $queueCount ?></strong>
+                <?= $queueCount === 1 ? 'patient' : 'patients' ?>
+            </span>
+            <?php if ($queueCount > 0): ?>
+            <span class="ph-stat-pill ph-stat-pill--waiting" title="Waiting for pharmacy">
+                <i class="bi bi-hourglass-split" aria-hidden="true"></i> <?= (int) $statWaiting ?>
+            </span>
+            <span class="ph-stat-pill ph-stat-pill--dispensing" title="Dispensing">
+                <i class="bi bi-box-seam" aria-hidden="true"></i> <?= (int) $statDispensing ?>
+            </span>
+            <span class="ph-stat-pill ph-stat-pill--dispensed" title="Dispensed">
+                <i class="bi bi-check2-circle" aria-hidden="true"></i> <?= (int) $statDispensed ?>
+            </span>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -35,6 +77,9 @@ $queueCount = count($queue);
                 aria-label="Search pharmacy queue"
                 autocomplete="off"
             >
+            <button type="button" class="ph-search-clear<?= $searchQuery === '' ? ' d-none' : '' ?>" id="phSearchClear" aria-label="Clear search">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
         </div>
 
         <label class="ph-filter">
@@ -57,8 +102,8 @@ $queueCount = count($queue);
             </select>
         </label>
 
-        <a href="<?= BASE_URL ?>/dashboard.php" class="btn btn-outline-primary ph-reset">
-            <i class="bi bi-arrow-counterclockwise"></i> Reset
+        <a href="<?= BASE_URL ?>/dashboard.php" class="btn btn-outline-secondary ph-reset">
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Reset
         </a>
     </form>
 
@@ -85,7 +130,7 @@ $queueCount = count($queue);
                     <th>Prescribing Doctor</th>
                     <th>Status</th>
                     <th>Medications</th>
-                    <th class="text-end">Actions</th>
+                    <th class="ph-actions-col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,8 +142,13 @@ $queueCount = count($queue);
                         </span>
                     </td>
                     <td>
-                        <div class="ph-name"><?= htmlspecialchars(strtoupper($row['formal_name'])) ?></div>
-                        <div class="ph-sub"><?= htmlspecialchars($row['patient_id']) ?></div>
+                        <div class="ph-patient-cell">
+                            <span class="ph-patient-avatar" aria-hidden="true"><?= htmlspecialchars($patientInitials($row['formal_name'])) ?></span>
+                            <div>
+                                <div class="ph-name"><?= htmlspecialchars(strtoupper($row['formal_name'])) ?></div>
+                                <div class="ph-sub"><?= htmlspecialchars($row['patient_id']) ?></div>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <div class="ph-date"><?= htmlspecialchars($row['consult_date']) ?></div>
@@ -116,12 +166,15 @@ $queueCount = count($queue);
                         <?php endif; ?>
                     </td>
                     <td>
-                        <span class="ph-meds"><?= htmlspecialchars($row['medication_label']) ?></span>
+                        <span class="ph-meds">
+                            <i class="bi bi-capsule-pill" aria-hidden="true"></i>
+                            <?= htmlspecialchars($row['medication_label']) ?>
+                        </span>
                     </td>
-                    <td class="ph-actions text-end">
-                        <a class="btn btn-primary ph-action-btn" href="<?= htmlspecialchars($row['dispense_url']) ?>">
-                            <i class="bi <?= htmlspecialchars($row['action_icon']) ?>"></i>
-                            <?= htmlspecialchars($row['action_label']) ?>
+                    <td class="ph-actions ph-actions-col">
+                        <a class="btn btn-primary ph-action-btn" href="<?= htmlspecialchars($row['dispense_url']) ?>" title="<?= htmlspecialchars($row['action_label']) ?>">
+                            <i class="bi <?= htmlspecialchars($row['action_icon']) ?>" aria-hidden="true"></i>
+                            <span class="ph-action-label"><?= htmlspecialchars($row['action_label']) ?></span>
                         </a>
                     </td>
                 </tr>
@@ -130,6 +183,7 @@ $queueCount = count($queue);
         </table>
     </div>
     <?php endif; ?>
+    </div>
 </div>
 
 <script>
@@ -139,13 +193,22 @@ $queueCount = count($queue);
     const status = document.getElementById('phStatusFilter');
     const sort = document.getElementById('phSortFilter');
     const search = document.getElementById('phSearch');
+    const clearBtn = document.getElementById('phSearchClear');
     let timer = null;
 
     status?.addEventListener('change', () => form.submit());
     sort?.addEventListener('change', () => form.submit());
     search?.addEventListener('input', () => {
+        clearBtn?.classList.toggle('d-none', !search.value.trim());
         clearTimeout(timer);
         timer = setTimeout(() => form.submit(), 400);
+    });
+    clearBtn?.addEventListener('click', () => {
+        if (!search) return;
+        search.value = '';
+        clearBtn.classList.add('d-none');
+        search.focus();
+        form.submit();
     });
 })();
 </script>

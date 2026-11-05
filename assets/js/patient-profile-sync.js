@@ -19,10 +19,12 @@ const PatientProfileSync = (() => {
 
     const EXTENDED_PROFILE_FIELDS = new Set([
         'address_street', 'address_barangay', 'address_municipality', 'address_province',
-        'philhealth_fe_private', 'philhealth_fe_government', 'pkrf_registration_date', 'itr_age',
-        'pkrf_date_registered',
-        'pkrf_signatory_last', 'pkrf_signatory_first', 'pkrf_signatory_middle',
-        'pkrf_confirm_full_name', 'pkrf_confirm_pin', 'pkrf_confirm_birth_date', 'pkrf_confirm_address',
+        'philhealth_fe_private', 'philhealth_fe_government', 'pcsf_date', 'itr_age',
+        'pcsf_confirm_date',
+        'pcsf_signatory_last', 'pcsf_signatory_first', 'pcsf_signatory_middle',
+        'pcsf_confirm_last', 'pcsf_confirm_first', 'pcsf_confirm_middle',
+        'pcsf_confirm_pin', 'pcsf_confirm_birth_date',
+        'pcsf_confirm_barangay', 'pcsf_confirm_city', 'pcsf_confirm_province',
         'ekas_patient_name', 'ekas_feedback_pin',
         'epress_patient_name', 'epress_feedback_pin',
     ]);
@@ -40,17 +42,21 @@ const PatientProfileSync = (() => {
         itr_age: (s) => calcAge(s.birth_date),
         photo_consent_name: (s) => formatFullName(s),
         photo_consent_address: (s) => formatAddress(s),
-        // PKRF signatory + confirmation slip — mirror beneficiary profile
-        pkrf_signatory_last: (s) => (s.last_name || '').trim(),
-        pkrf_signatory_first: (s) => (s.first_name || '').trim(),
-        pkrf_signatory_middle: (s) => (s.middle_name || '').trim(),
-        pkrf_confirm_full_name: (s) => formatFullName(s),
-        pkrf_confirm_pin: (s) => (s.philhealth_no || '').trim(),
-        pkrf_confirm_birth_date: (s) => (s.birth_date || '').trim(),
-        pkrf_confirm_address: (s) => formatAddress(s),
+        // PCSF signatory + confirmation slip — mirror beneficiary profile
+        pcsf_signatory_last: (s) => (s.last_name || '').trim(),
+        pcsf_signatory_first: (s) => (s.first_name || '').trim(),
+        pcsf_signatory_middle: (s) => (s.middle_name || '').trim(),
+        pcsf_confirm_last: (s) => (s.last_name || '').trim(),
+        pcsf_confirm_first: (s) => (s.first_name || '').trim(),
+        pcsf_confirm_middle: (s) => (s.middle_name || '').trim(),
+        pcsf_confirm_pin: (s) => (s.philhealth_no || '').trim(),
+        pcsf_confirm_birth_date: (s) => (s.birth_date || '').trim(),
+        pcsf_confirm_barangay: (s) => (s.address_barangay || '').trim(),
+        pcsf_confirm_city: (s) => (s.address_municipality || '').trim(),
+        pcsf_confirm_province: (s) => (s.address_province || '').trim(),
         // RHU visit / encounter date
-        pkrf_registration_date: () => getVisitDate(),
-        pkrf_date_registered: () => getVisitDate(),
+        pcsf_date: () => getVisitDate(),
+        pcsf_confirm_date: () => getVisitDate(),
         ekas_patient_name: (s) => formatFullName(s),
         ekas_feedback_pin: (s) => (s.philhealth_no || '').trim(),
         epress_patient_name: (s) => formatFullName(s),
@@ -217,7 +223,7 @@ const PatientProfileSync = (() => {
     }
 
     /**
-     * Radios with the same name appear on multiple wizard pages (e.g. sex on Enrollment + PKRF).
+     * Radios with the same name appear on multiple wizard pages (e.g. philhealth status on PCSF).
      * HTML allows only one checked radio per name in the whole form — checking every match
      * immediately unchecks the one the user clicked. Prefer skipElement, then active page.
      */
@@ -404,11 +410,11 @@ const PatientProfileSync = (() => {
         };
 
         const barangay = normalizeBarangay(state.address_barangay || '') || 'Poblacion';
-        setIfEmpty('pkrf_kpp_1st', 'RHU MAGALLANES');
-        setIfEmpty('pkrf_kpp1_barangay', barangay);
-        setIfEmpty('pkrf_kpp1_city', MAGALLANES.municipality);
-        setIfEmpty('pkrf_kpp1_province', MAGALLANES.province);
-        setIfEmpty('pkrf_konsulta_package', 'RHU MAGALLANES');
+        setIfEmpty('pcsf_pcc_1st', 'RHU MAGALLANES');
+        setIfEmpty('pcsf_pcc1_barangay', barangay);
+        setIfEmpty('pcsf_pcc1_city', MAGALLANES.municipality);
+        setIfEmpty('pcsf_pcc1_province', MAGALLANES.province);
+        setIfEmpty('pcsf_primary_care_clinic', 'RHU MAGALLANES');
         fillEkasDefaultsIfEmpty();
         fillEpressDefaultsIfEmpty();
     }
@@ -526,7 +532,7 @@ const PatientProfileSync = (() => {
         return { patient, extended };
     }
 
-    /** First non-empty value wins (PKRF / earlier pages appear first in DOM). */
+    /** First non-empty value wins (PCSF / earlier pages appear first in DOM). */
     function pickBestValue(key, extended) {
         const name = extended ? `extended[${key}]` : key;
 

@@ -27,6 +27,18 @@ function requireRole(array $allowedRoles): void
     }
 }
 
+function requireAdminAccess(): void
+{
+    require_once __DIR__ . '/../core/AdminAccess.php';
+    AdminAccess::requireAccess();
+}
+
+function requireAdminPermission(string $permissionKey): void
+{
+    require_once __DIR__ . '/../core/AdminAccess.php';
+    AdminAccess::requirePermission($permissionKey);
+}
+
 function generatePatientId(mysqli $conn): string
 {
     $year = date('Y');

@@ -98,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return data || {};
     }
 
-    function fillFields(treatment, extended, patient, diagnoses, medications) {
+    function fillFields(treatment, extended, patient, diagnoses, medications, dataExtra) {
+        const data = dataExtra || {};
         const t = treatment || {};
         const ext = extended || {};
         const p = patient || {};
@@ -157,6 +158,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const followEl = form.querySelector('[name="extended[doctor_follow_up]"]');
         if (followEl) followEl.value = ext.doctor_follow_up || '';
 
+        const prefs = data.reminder_prefs || p;
+        const emailEl = document.getElementById('patient_email');
+        if (emailEl) {
+            emailEl.value = prefs.patient_email || p.patient_email || ext.pcsf_email || '';
+        }
+        const smsOpt = document.getElementById('reminder_sms_opt_in');
+        if (smsOpt) smsOpt.checked = String(prefs.reminder_sms_opt_in || '0') === '1';
+        const emailOpt = document.getElementById('reminder_email_opt_in');
+        if (emailOpt) emailOpt.checked = String(prefs.reminder_email_opt_in || '0') === '1';
+
+        const fu = data.follow_up || null;
+        const dateEl = document.getElementById('follow_up_date');
+        if (dateEl) dateEl.value = fu && fu.follow_up_date ? String(fu.follow_up_date).slice(0, 10) : '';
+        const channelHidden = document.getElementById('follow_up_channel');
+        const channelExtra = document.getElementById('follow_up_channel_sms_extra');
+        const ch = fu && fu.channel ? fu.channel : 'email';
+        if (channelHidden) channelHidden.value = ch;
+        if (channelExtra) channelExtra.value = ch;
+        const remindEl = document.getElementById('follow_up_remind');
+        if (remindEl) remindEl.checked = fu ? String(fu.send_reminder || '0') === '1' : false;
+
         if (t.id) {
             document.getElementById('consultationId').value = String(t.id);
             cfg.consultationId = Number(t.id);
@@ -178,7 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.extended || {},
                 data.patient || {},
                 data.diagnoses || [],
-                data.medications || []
+                data.medications || [],
+                data
             );
             if (data.consultation_id) {
                 document.getElementById('consultationId').value = String(data.consultation_id);
@@ -244,6 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!body.get('date_of_consultation')) {
                 body.set('date_of_consultation', new Date().toISOString().slice(0, 10));
             }
+            syncFollowUpChannelField();
+            body.set('follow_up_remind', document.getElementById('follow_up_remind')?.checked ? '1' : '0');
+            body.set('reminder_sms_opt_in', document.getElementById('reminder_sms_opt_in')?.checked ? '1' : '0');
+            body.set('reminder_email_opt_in', document.getElementById('reminder_email_opt_in')?.checked ? '1' : '0');
 
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 45000);
@@ -384,6 +411,28 @@ document.addEventListener('DOMContentLoaded', () => {
             resetSubmitButton();
         }
     }
+
+    function syncFollowUpChannelField() {
+        const hidden = document.getElementById('follow_up_channel');
+        const extra = document.getElementById('follow_up_channel_sms_extra');
+        if (hidden && extra) {
+            hidden.value = extra.value || 'email';
+        }
+    }
+
+    const followRemindEl = document.getElementById('follow_up_remind');
+    const emailOptEl = document.getElementById('reminder_email_opt_in');
+    followRemindEl?.addEventListener('change', () => {
+        if (followRemindEl.checked) {
+            if (emailOptEl) emailOptEl.checked = true;
+            const extra = document.getElementById('follow_up_channel_sms_extra');
+            if (extra && extra.value === 'sms') {
+                extra.value = 'email';
+            }
+            syncFollowUpChannelField();
+        }
+    });
+    document.getElementById('follow_up_channel_sms_extra')?.addEventListener('change', syncFollowUpChannelField);
 
     btnSave?.addEventListener('click', async () => {
         await saveDraft({ showSuccess: true, showErrors: true, rethrow: false });

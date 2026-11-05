@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../core/Permissions.php';
+$sidebarCanReports = Permissions::can('reports.view');
+$sidebarCanHeatMap = Permissions::can('heatmap.view');
+?>
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
         <div class="brand-icon">
@@ -32,12 +37,22 @@
                     <span>Patient Records (View Only)</span>
                 </a>
             </li>
+            <?php if ($sidebarCanReports): ?>
             <li class="nav-item">
-                <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link">
+                <a href="<?= BASE_URL ?>/reports.php" class="nav-link <?= ($activePage ?? '') === 'reports' ? 'active' : '' ?>">
                     <i class="bi bi-bar-chart"></i>
                     <span>Reports</span>
                 </a>
             </li>
+            <?php endif; ?>
+            <?php if ($sidebarCanHeatMap): ?>
+            <li class="nav-item">
+                <a href="<?= BASE_URL ?>/heat-map.php" class="nav-link <?= ($activePage ?? '') === 'heat-map' ? 'active' : '' ?>">
+                    <i class="bi bi-map"></i>
+                    <span>Heat Map</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <?php elseif (($user['role'] ?? '') === ROLE_IT): ?>
             <li class="nav-item">
                 <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>">
@@ -58,6 +73,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="<?= BASE_URL ?>/validation-status.php" class="nav-link <?= $activePage === 'validation' ? 'active' : '' ?>">
+                    <i class="bi bi-shield-check"></i>
+                    <span>IT Review Queue</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <?php
                 $printReadyCount = 0;
                 try {
@@ -75,12 +96,22 @@
                     <?php endif; ?>
                 </a>
             </li>
+            <?php if ($sidebarCanReports): ?>
             <li class="nav-item">
-                <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link">
+                <a href="<?= BASE_URL ?>/reports.php" class="nav-link <?= ($activePage ?? '') === 'reports' ? 'active' : '' ?>">
                     <i class="bi bi-bar-chart"></i>
                     <span>Reports</span>
                 </a>
             </li>
+            <?php endif; ?>
+            <?php if ($sidebarCanHeatMap): ?>
+            <li class="nav-item">
+                <a href="<?= BASE_URL ?>/heat-map.php" class="nav-link <?= ($activePage ?? '') === 'heat-map' ? 'active' : '' ?>">
+                    <i class="bi bi-map"></i>
+                    <span>Heat Map</span>
+                </a>
+            </li>
+            <?php endif; ?>
             <?php elseif (($user['role'] ?? '') === ROLE_PHARMACY): ?>
             <li class="nav-item">
                 <a href="<?= BASE_URL ?>/dashboard.php" class="nav-link <?= in_array($activePage, ['dashboard', 'pharmacy'], true) ? 'active' : '' ?>">

@@ -27,33 +27,33 @@ $P = PaperFormRenderer::class;
     <table class="pf-table" style="font-size:7.5pt;">
         <tr>
             <td style="width:38%;">
-                <span class="pf-label">HCI NAME</span>
+                <?= $P::label('HCI NAME', 'epress_hci_name') ?>
                 <?= $P::line('epress_hci_name', $role, $fg, $lockRecords, true) ?>
             </td>
             <td style="width:18%;">
-                <span class="pf-label">Case No.</span>
+                <?= $P::label('Case No.', 'epress_case_no', false) ?>
                 <?= $P::line('epress_case_no', $role, $fg, $lockRecords, true) ?>
             </td>
             <td style="width:22%;">
-                <span class="pf-label">HCI Accreditation No.</span>
+                <?= $P::label('HCI Accreditation No.', 'epress_accreditation_no', false) ?>
                 <?= $P::line('epress_accreditation_no', $role, $fg, $lockRecords, true) ?>
             </td>
             <td style="width:22%;">
-                <span class="pf-label">Transaction No.</span>
+                <?= $P::label('Transaction No.', 'epress_transaction_no', false) ?>
                 <?= $P::line('epress_transaction_no', $role, $fg, $lockRecords, true) ?>
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span class="pf-label">PIN (PhilHealth Identification Number)</span>
+                <?= $P::label('PIN (PhilHealth Identification Number)', 'philhealth_no') ?>
                 <?= $P::line('philhealth_no', $role, $fg, $lockRecords) ?>
             </td>
             <td>
-                <span class="pf-label">Membership Category</span>
+                <?= $P::label('Membership Category', 'philhealth_category', false) ?>
                 <?= $P::line('philhealth_category', $role, $fg, $lockRecords) ?>
             </td>
             <td>
-                <span class="pf-label">Membership Type</span>
+                <?= $P::label('Membership Type', 'philhealth_status_type', false) ?>
                 <div style="margin-top:2px;">
                     <?= $P::radio('philhealth_status_type', 'Member', 'MEMBER', $role, $fg, $lockRecords) ?>
                     <?= $P::radio('philhealth_status_type', 'Dependent', 'DEPENDENT', $role, $fg, $lockRecords) ?>
@@ -62,15 +62,15 @@ $P = PaperFormRenderer::class;
         </tr>
         <tr>
             <td colspan="2">
-                <span class="pf-label">Patient Name (Pangalan ng Pasyente)</span>
+                <?= $P::label('Patient Name (Pangalan ng Pasyente)', 'epress_patient_name', false) ?>
                 <?= $P::line('epress_patient_name', $role, $fg, $lockRecords, true) ?>
             </td>
             <td>
-                <span class="pf-label">Age (Edad)</span>
+                <?= $P::label('Age (Edad)', 'itr_age', false) ?>
                 <?= $P::line('itr_age', $role, $fg, $lockRecords, true) ?>
             </td>
             <td>
-                <span class="pf-label">Contact No. (Numero ng Telepono)</span>
+                <?= $P::label('Contact No. (Numero ng Telepono)', 'contact_number', false) ?>
                 <?= $P::line('contact_number', $role, $fg, $lockRecords) ?>
             </td>
         </tr>
@@ -86,7 +86,7 @@ $P = PaperFormRenderer::class;
         </div>
         <div class="epress-rx-foot">
             <div class="epress-rx-foot-left">
-                <span class="pf-label">Next Dispensing Date:</span>
+                <?= $P::label('Next Dispensing Date:', 'epress_next_dispensing_date', false) ?>
                 <?= $P::line('epress_next_dispensing_date', $role, $fg, $lockRecords, true, 'date') ?>
                 <span style="font-size:6.5pt;font-style:italic;">(Petsa ng susunod na bigay ng gamot)</span>
             </div>
@@ -94,15 +94,15 @@ $P = PaperFormRenderer::class;
                 <?= $P::line('epress_physician_name', $role, $fg, $lockRecords, true) ?>
                 <div class="pf-sig-label" style="margin-top:2px;">Physician: __________________</div>
                 <div style="margin-top:4px;font-size:7pt;">
-                    <span class="pf-label" style="display:inline;">PRC LIC No.:</span>
+                    <?= $P::labelHtml('PRC LIC No.:', 'epress_prc_lic', false, 'pf-label--inline', 'display:inline;') ?>
                     <?= $P::line('epress_prc_lic', $role, $fg, $lockRecords, true) ?>
                 </div>
                 <div style="margin-top:2px;font-size:7pt;">
-                    <span class="pf-label" style="display:inline;">PTR No.:</span>
+                    <?= $P::labelHtml('PTR No.:', 'epress_ptr_no', false, 'pf-label--inline', 'display:inline;') ?>
                     <?= $P::line('epress_ptr_no', $role, $fg, $lockRecords, true) ?>
                 </div>
                 <div style="margin-top:2px;font-size:7pt;">
-                    <span class="pf-label" style="display:inline;">S2 No.:</span>
+                    <?= $P::labelHtml('S2 No.:', 'epress_s2_no', false, 'pf-label--inline', 'display:inline;') ?>
                     <?= $P::line('epress_s2_no', $role, $fg, $lockRecords, true) ?>
                 </div>
             </div>
@@ -147,7 +147,7 @@ $P = PaperFormRenderer::class;
     </p>
 
     <div class="pf-field-row" style="margin-top:8px;">
-        <span class="pf-label">PhilHealth Identification Number of Patient:</span>
+        <?= $P::label('PhilHealth Identification Number of Patient:', 'epress_feedback_pin', false) ?>
         <?= $P::line('epress_feedback_pin', $role, $fg, $lockRecords, true) ?>
     </div>
 </div>

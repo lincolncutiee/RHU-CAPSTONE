@@ -1,0 +1,31 @@
+-- PCSF replaces PKRF — extended JSON field keys in treatment_records.receptionist_data
+-- No new patient table columns required; shared patient fields reused.
+--
+-- New PCSF extended keys (pcsf_*):
+--   pcsf_date, pcsf_email
+--   pcsf_register_pcc, pcsf_register_dependents
+--   pcsf_signatory_last, pcsf_signatory_first, pcsf_signatory_middle
+--   pcsf_pcc_1st, pcsf_pcc1_barangay, pcsf_pcc1_city, pcsf_pcc1_province
+--   pcsf_pcc_2nd, pcsf_pcc2_barangay, pcsf_pcc2_city, pcsf_pcc2_province
+--   pcsf_transfer, pcsf_previous_pcc
+--   pcsf_transfer_pcc_1st, pcsf_transfer_pcc1_barangay, pcsf_transfer_pcc1_city, pcsf_transfer_pcc1_province
+--   pcsf_transfer_pcc_2nd, pcsf_transfer_pcc2_barangay, pcsf_transfer_pcc2_city, pcsf_transfer_pcc2_province
+--   pcsf_signature
+--   pcsf_selection_no, pcsf_confirm_date
+--   pcsf_confirm_last, pcsf_confirm_first, pcsf_confirm_middle
+--   pcsf_confirm_pin, pcsf_confirm_birth_date
+--   pcsf_primary_care_clinic
+--   pcsf_confirm_barangay, pcsf_confirm_city, pcsf_confirm_province
+--   pcsf_personnel_signature
+--
+-- Optional: remove legacy pkrf_* keys from existing JSON (run after backup):
+-- UPDATE treatment_records
+-- SET receptionist_data = JSON_REMOVE(
+--   receptionist_data,
+--   '$.enrollment_extended.fields.pkrf_registration_date',
+--   '$.enrollment_extended.fields.pkrf_register_kpp'
+--   -- add remaining pkrf_* paths as needed
+-- )
+-- WHERE receptionist_data LIKE '%pkrf_%';
+
+SELECT 'PCSF migration notes applied — no DDL changes required' AS status;

@@ -118,6 +118,13 @@
     white-space: nowrap;
 }
 
+.pr-action-buttons {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+}
+
 #filterView {
     min-width: 120px;
 }

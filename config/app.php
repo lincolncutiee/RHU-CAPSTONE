@@ -15,6 +15,8 @@ define('ROLE_IT', 'it_department');
 define('ROLE_RECEPTIONIST', 'receptionist');
 define('ROLE_DOCTOR', 'doctor');
 define('ROLE_PHARMACY', 'pharmacy');
+/** System settings / users / templates — not Records, IT, or clinical workflow. */
+define('ROLE_SYSTEM_ADMIN', 'system_administrator');
 
 /** Clinical / encoding phase */
 define('WORKFLOW_DRAFT', 'Draft');

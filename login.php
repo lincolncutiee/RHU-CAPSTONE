@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/vendor-assets.php';
 require_once __DIR__ . '/core/Permissions.php';
 require_once __DIR__ . '/core/Pharmacy.php';
 
@@ -16,16 +17,10 @@ function rhuHomeUrl(): string
     if ($role === ROLE_PHARMACY) {
         return BASE_URL . '/dashboard.php';
     }
+    if ($role === ROLE_SYSTEM_ADMIN) {
+        return BASE_URL . '/admin/users.php';
+    }
     return BASE_URL . '/dashboard.php';
-}
-
-// Ensure pharmacy demo role/user exists before login attempts.
-try {
-    $seedConn = getDBConnection();
-    Pharmacy::ensureSchema($seedConn);
-    $seedConn->close();
-} catch (Throwable $e) {
-    // Login still works for existing users if seed fails.
 }
 
 if (Auth::check()) {
@@ -56,9 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | <?= APP_NAME ?></title>
     <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/img/rhu-magallanes-logo.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="<?= htmlspecialchars(rhu_asset_url('bootstrap_css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css')) ?>" rel="stylesheet">
+    <link href="<?= htmlspecialchars(rhu_asset_url('bootstrap_icons_css', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css')) ?>" rel="stylesheet">
     <link href="<?= BASE_URL ?>/assets/css/main.css" rel="stylesheet">
     <link href="<?= BASE_URL ?>/assets/css/login.css" rel="stylesheet">
 </head>
@@ -112,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="badge bg-light text-dark">pharmacy</span>
                     <span class="badge bg-light text-dark">it</span>
                     <span class="badge bg-light text-dark">receptionist</span>
+                    <span class="badge bg-secondary text-white" title="System settings only — not IT workflow">admin</span>
                 </div>
             </div>
         </div>

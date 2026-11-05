@@ -9,6 +9,7 @@ require_once __DIR__ . '/../core/ExtendedFormData.php';
 require_once __DIR__ . '/../core/PatientProfile.php';
 require_once __DIR__ . '/../core/Consultation.php';
 require_once __DIR__ . '/../core/ClinicalMaster.php';
+require_once __DIR__ . '/../core/FollowUpReminder.php';
 requireLogin();
 
 $id = (int) ($_GET['id'] ?? 0);
@@ -77,6 +78,12 @@ if (!empty($treatment['id'])) {
     $diagnoses = $hydrated['diagnoses'];
     $medications = $hydrated['medications'];
 }
+
+$followUp = null;
+$reminderPrefs = FollowUpReminder::patientPrefs($conn, $id);
+if (!empty($treatment['id'])) {
+    $followUp = FollowUpReminder::forConsultation($conn, (int) $treatment['id']);
+}
 $conn->close();
 
 $consultExtended = ExtendedFormData::fromTreatment($treatment);
@@ -105,4 +112,6 @@ echo json_encode([
     'profile'       => PatientProfile::buildPayload($patient, $extendedFields),
     'form_progress' => $consultExtended['form_progress'],
     'profile_required' => PatientProfile::requiredForCreate(),
+    'follow_up'        => $followUp,
+    'reminder_prefs'   => $reminderPrefs,
 ]);

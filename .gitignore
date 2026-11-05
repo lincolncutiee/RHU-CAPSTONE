@@ -1,0 +1,27 @@
+# Runtime uploads (patient/historical photos — keep folder guards only)
+uploads/**/*
+!uploads/**/index.php
+!uploads/.gitkeep
+
+# Database dumps (may contain real PHI)
+backups/
+
+# Large HDX / PSA boundary downloads (use scripts to re-fetch locally)
+assets/geo/_hdx_*
+assets/geo/_hdx_extract/
+assets/geo/*.zip
+assets/geo/*.zip.*
+assets/geo/*.part.tmp
+assets/geo/*.rebuild
+assets/geo/*.dl
+assets/geo/_overpass-debug.json
+
+# Script dependencies
+scripts/node_modules/
+
+# Logs and OS
+*.log
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/

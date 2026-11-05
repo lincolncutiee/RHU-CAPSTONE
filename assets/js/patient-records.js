@@ -204,9 +204,42 @@ const PatientRecordsPage = (() => {
         return { consultLabel, lastConsult, noConsult };
     }
 
+    function isItUser() {
+        const role = window.PR_USER_ROLE || '';
+        return role === 'it_department' || role === 'it';
+    }
+
+    function isRecordsUser() {
+        const role = window.PR_USER_ROLE || '';
+        return role === 'records_office' || role === 'records';
+    }
+
+    function canArchivePatient(patient) {
+        const status = patient.status;
+        if (status === 'Archived') {
+            return false;
+        }
+        if (isItUser()) {
+            return true;
+        }
+        if (isRecordsUser()) {
+            return status === 'Draft' || status === 'Rejected';
+        }
+        return false;
+    }
+
     function getMenuItems(patient) {
         const items = [];
+        if (patient.status === 'Archived') {
+            return items;
+        }
+
         if (patient.is_locked) {
+            if (patient.status === 'Printed' && canArchivePatient(patient)) {
+                return [
+                    { icon: 'bi-archive', label: 'Archive', action: 'archive', class: 'text-danger' },
+                ];
+            }
             return items;
         }
 
@@ -214,13 +247,15 @@ const PatientRecordsPage = (() => {
             case 'Draft':
                 items.push(
                     { icon: 'bi-pencil', label: 'Edit Information', action: 'edit', class: '' },
-                    { icon: 'bi-send', label: 'Submit for Consultation', action: 'submit', class: '' },
-                    { divider: true },
-                    { icon: 'bi-archive', label: 'Archive', action: 'archive', class: 'text-danger' }
+                    { icon: 'bi-send', label: 'Submit for Consultation', action: 'submit', class: '' }
                 );
                 break;
             case 'Pending Receptionist':
+            case 'Waiting for Doctor':
             case 'Pending Doctor':
+            case 'Waiting for Pharmacy':
+            case 'Dispensing':
+            case 'Dispensed':
             case 'Pending IT Review':
             case 'Pending IT Validation':
             case 'Ready for Printing':
@@ -243,8 +278,16 @@ const PatientRecordsPage = (() => {
                 );
                 break;
             case 'Printed':
-            case 'Archived':
                 break;
+        }
+
+        if (canArchivePatient(patient) && !items.some((item) => item.action === 'archive')) {
+            if (items.length > 0) {
+                items.push({ divider: true });
+            }
+            items.push(
+                { icon: 'bi-archive', label: 'Archive', action: 'archive', class: 'text-danger' }
+            );
         }
 
         return items;
@@ -734,9 +777,7 @@ const PatientRecordsPage = (() => {
                         }
                         break;
                     case 'archive':
-                        if (confirm(`Archive "${patientName}"? This record will be hidden from search results.`)) {
-                            alert('Record archived. (Connect to backend API)');
-                        }
+                        archivePatient(patientId, patientName);
                         break;
                     case 'view-status':
                         alert(`Validation status for "${patientName}": Pending review by IT Department.`);
@@ -757,6 +798,28 @@ const PatientRecordsPage = (() => {
         document.getElementById('rejectionReasonText').textContent = reason || 'No reason provided.';
         const modal = new bootstrap.Modal(document.getElementById('rejectionModal'));
         modal.show();
+    }
+
+    async function archivePatient(patientId, patientName) {
+        if (!confirm(`Archive "${patientName}"? This record will be hidden from the patient list.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${BASE_URL}/api/archive_patient.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ patient_id: Number(patientId) }),
+            });
+            const data = await res.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Archive failed.');
+            }
+            refreshList();
+        } catch (err) {
+            alert(err.message || 'Unable to archive record.');
+        }
     }
 
     function refreshList() {

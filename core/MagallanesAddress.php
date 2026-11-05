@@ -28,6 +28,18 @@ class MagallanesAddress
     /** @return list<string> */
     public static function barangays(): array
     {
+        if (!class_exists('MagallanesGeoJson', false)) {
+            require_once __DIR__ . '/MagallanesGeoJson.php';
+        }
+        try {
+            $fromGeo = MagallanesGeoJson::barangayNames();
+            if ($fromGeo !== []) {
+                return $fromGeo;
+            }
+        } catch (Throwable $e) {
+            // Fall back to config when GeoJSON is unavailable during setup.
+        }
+
         return self::config()['barangays'];
     }
 
@@ -45,20 +57,32 @@ class MagallanesAddress
         return false;
     }
 
-    /** Normalize to official spelling, or empty if unknown. */
+    /** Normalize to official spelling from GeoJSON, or empty if unknown. */
     public static function normalizeBarangay(?string $barangay): string
     {
         $barangay = trim((string) $barangay);
         if ($barangay === '') {
             return '';
         }
-        foreach (self::barangays() as $official) {
+
+        if (!class_exists('MagallanesGeoJson', false)) {
+            require_once __DIR__ . '/MagallanesGeoJson.php';
+        }
+        try {
+            $fromGeo = MagallanesGeoJson::normalizeBarangayName($barangay);
+            if ($fromGeo !== '') {
+                return $fromGeo;
+            }
+        } catch (Throwable $e) {
+            // Fall back to config list below.
+        }
+
+        foreach (self::config()['barangays'] as $official) {
             if (strcasecmp($official, $barangay) === 0) {
                 return $official;
             }
         }
-        // Legacy free-text may contain the barangay name
-        foreach (self::barangays() as $official) {
+        foreach (self::config()['barangays'] as $official) {
             if (stripos($barangay, $official) !== false) {
                 return $official;
             }

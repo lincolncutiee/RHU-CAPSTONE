@@ -1,19 +1,13 @@
 <?php
 /**
  * Required fields per official RHU form for IT readiness validation.
- *
- * Keys:
- *   patient  — patients table column
- *   treatment — treatment_records column
- *   extended — receptionist_data JSON field
- *   custom   — handled in FormCompleteness
  */
 return [
-  'pkrf' => [
-    'label' => 'PhilHealth Konsulta Registration Form (PKRF)',
+  'pcsf' => [
+    'label' => 'PhilHealth Primary Care Selection Form (PCSF)',
     'owner' => 'it',
-    'patient' => ['philhealth_no', 'last_name', 'first_name', 'sex', 'birth_date'],
-    'extended' => ['pkrf_registration_date'],
+    'patient' => ['philhealth_no', 'last_name', 'first_name', 'birth_date'],
+    'extended' => ['pcsf_date'],
     'custom' => ['philhealth_format'],
   ],
   'itr' => [

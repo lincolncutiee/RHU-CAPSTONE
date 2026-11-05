@@ -730,6 +730,16 @@
     background: #e8ecf0;
 }
 
+.it-printjob.it-preview-body {
+    background: #fff;
+}
+
+.it-printjob .it-preview-pages {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
 .it-preview-chrome {
     position: sticky;
     top: 0;

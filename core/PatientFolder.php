@@ -129,7 +129,7 @@ class PatientFolder
   public static function profileForms(): array
   {
     return [
-      ['id' => 'pkrf',       'label' => 'PhilHealth Konsulta Registration Form (PKRF)', 'page' => 'pkrf'],
+      ['id' => 'pcsf',       'label' => 'PhilHealth Primary Care Selection Form (PCSF)', 'page' => 'pcsf'],
       ['id' => 'enrollment', 'label' => 'Patient Enrollment Record', 'page' => 'enrollment'],
       ['id' => 'history',    'label' => 'Past Medical / Surgical / Family History', 'page' => 'history'],
       ['id' => 'personal',   'label' => 'Personal / Social History, NCD & Photo Consent', 'page' => 'personal'],
@@ -219,12 +219,12 @@ class PatientFolder
     $forms = [];
 
     $hasPkRf = self::hasText($patient['philhealth_no'] ?? null)
-      || self::hasPrefixedKey($extended, 'pkrf_');
+      || self::hasPrefixedKey($extended, 'pcsf_');
     if ($hasPkRf) {
       $forms[] = [
-        'id' => 'pkrf',
-        'label' => 'PhilHealth Konsulta Registration Form (PKRF)',
-        'url' => $base . 'pkrf',
+        'id' => 'pcsf',
+        'label' => 'PhilHealth Primary Care Selection Form (PCSF)',
+        'url' => $base . 'pcsf',
         'kind' => 'profile',
       ];
     }

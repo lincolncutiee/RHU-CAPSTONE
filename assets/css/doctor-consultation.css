@@ -6,6 +6,46 @@
     padding: 0 0 2rem;
 }
 
+.dc-followup-card {
+    padding: 0.85rem 1rem;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f8fbff 0%, #fff 100%);
+}
+
+.dc-followup-card__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.dc-followup-card__sub {
+    margin: 0.2rem 0 0.65rem;
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.dc-followup-hint {
+    margin-top: 0.65rem;
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+.dc-followup-remind {
+    min-height: 2.25rem;
+    padding-left: 0.15rem;
+}
+
+.dc-followup-sms-details summary {
+    cursor: pointer;
+    user-select: none;
+}
+
+.dc-followup-sms-details[open] summary {
+    margin-bottom: 0.25rem;
+}
+
 .dc-header {
     display: flex;
     flex-direction: column;

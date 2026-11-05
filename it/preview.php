@@ -13,7 +13,8 @@ $consultationId = (int) ($_GET['consultation'] ?? 0);
 $documentKey = trim((string) ($_GET['document'] ?? ''));
 $bundleKey   = trim((string) ($_GET['bundle'] ?? ''));
 $formsParam  = trim((string) ($_GET['forms'] ?? ''));
-$autoprint   = isset($_GET['autoprint']) && $_GET['autoprint'] === '1';
+$printJob    = isset($_GET['printjob']) && $_GET['printjob'] === '1';
+$autoprint   = !$printJob && isset($_GET['autoprint']) && $_GET['autoprint'] === '1';
 
 if ($patientDbId <= 0) {
     die('Invalid patient ID.');
@@ -121,7 +122,7 @@ $cssOfficial = (int) @filemtime(__DIR__ . '/../assets/css/official-print.css');
     <link href="<?= BASE_URL ?>/assets/css/it-print.css?v=<?= $cssIt ?>" rel="stylesheet">
     <link href="<?= BASE_URL ?>/assets/css/official-print.css?v=<?= $cssOfficial ?>" rel="stylesheet">
 </head>
-<body class="it-preview-body <?= htmlspecialchars($layoutClass) ?><?= $autoprint ? ' it-autoprint' : '' ?><?= $layoutTestMode ? ' it-layout-test-mode' : '' ?>">
+<body class="it-preview-body <?= htmlspecialchars($layoutClass) ?><?= $printJob ? ' it-printjob' : '' ?><?= $autoprint ? ' it-autoprint' : '' ?><?= $layoutTestMode ? ' it-layout-test-mode' : '' ?>">
 
 <?php if ($layoutTestMode): ?>
 <div class="it-layout-test-banner no-print">
@@ -129,6 +130,7 @@ $cssOfficial = (int) @filemtime(__DIR__ . '/../assets/css/official-print.css');
 </div>
 <?php endif; ?>
 
+<?php if (!$printJob): ?>
 <div class="it-preview-chrome no-print">
     <div class="it-preview-chrome-inner it-preview-chrome-inner--wide">
         <div>
@@ -150,6 +152,7 @@ $cssOfficial = (int) @filemtime(__DIR__ . '/../assets/css/official-print.css');
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <div class="it-preview-pages it-preview-pages--<?= htmlspecialchars(preg_replace('/[^a-z0-9\-]/', '', strtolower($layout))) ?>" id="itPreviewPages">
     <?= ItPrintForms::renderForms($formIds, $role, $lockAll, $layout) ?>
@@ -161,6 +164,7 @@ window.IT_PREVIEW = {
     treatment: <?= json_encode($data['treatment'], JSON_UNESCAPED_UNICODE) ?>,
     extended: <?= json_encode($data['extended'], JSON_UNESCAPED_UNICODE) ?>,
     autoprint: <?= $autoprint ? 'true' : 'false' ?>,
+    printjob: <?= $printJob ? 'true' : 'false' ?>,
     layoutTestMode: <?= $layoutTestMode ? 'true' : 'false' ?>,
     layout: <?= json_encode($layout) ?>,
     document: <?= json_encode($documentKey) ?>,

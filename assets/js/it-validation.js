@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    // Unlock Records + PKRF fields for IT; keep doctor clinical fields read-only
+    // Unlock Records + PCSF fields for IT; keep doctor clinical fields read-only
     const editableGroups = new Set([
         'it',
         'records_enrollment',
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Saved',
-                text: 'Records / PKRF fields were saved.',
+                text: 'Records / PCSF fields were saved.',
                 timer: 1600,
                 showConfirmButton: false,
             });

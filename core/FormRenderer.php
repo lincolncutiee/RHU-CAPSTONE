@@ -1,9 +1,11 @@
 <?php
 
 require_once __DIR__ . '/Permissions.php';
+require_once __DIR__ . '/FormTemplate.php';
 
 class FormRenderer
 {
+    private static string $renderPageId = '';
     public static function getFlatPages(): array
     {
         $config = require __DIR__ . '/../config/form-wizard.php';
@@ -63,6 +65,7 @@ class FormRenderer
         require_once __DIR__ . '/PaperFormRenderer.php';
 
         $pageId = $page['id'] ?? '';
+        self::$renderPageId = $pageId;
         $paperPath = __DIR__ . '/../forms/paper/' . $pageId . '.php';
         if (file_exists($paperPath) && empty($page['is_review'])) {
             ob_start();
@@ -195,8 +198,12 @@ class FormRenderer
         ?>
         <div class="col-md-<?= (int) $col ?>">
             <label class="form-label">
-                <?= htmlspecialchars($field['label']) ?>
-                <?php if (!empty($field['required'])): ?><span class="text-danger">*</span><?php endif; ?>
+                <?= htmlspecialchars(FormTemplate::fieldLabel((string) ($field['label'] ?? ''), $name, self::$renderPageId ?: null)) ?>
+                <?php if (!empty($field['required'])): ?>
+                    <span class="text-danger">*</span>
+                <?php else: ?>
+                    <span class="text-muted fw-normal">(optional)</span>
+                <?php endif; ?>
             </label>
             <?php if ($type === 'textarea'): ?>
                 <textarea name="<?= htmlspecialchars($inputName) ?>" rows="<?= (int) ($field['rows'] ?? 3) ?>"
@@ -235,7 +242,14 @@ class FormRenderer
         ob_start();
         ?>
         <div class="col-md-<?= (int) $col ?>">
-            <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
+            <label class="form-label">
+                <?= htmlspecialchars($field['label']) ?>
+                <?php if (!empty($field['required'])): ?>
+                    <span class="text-danger">*</span>
+                <?php else: ?>
+                    <span class="text-muted fw-normal">(optional)</span>
+                <?php endif; ?>
+            </label>
             <div class="checkbox-grid">
                 <?php foreach ($field['options'] as $opt): ?>
                     <div class="form-check">

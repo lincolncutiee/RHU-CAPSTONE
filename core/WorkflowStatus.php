@@ -79,7 +79,7 @@ class WorkflowStatus
             return !self::canEncoderEdit($status);
         }
 
-        // IT may fill Records / PKRF fields until the record is hard-locked (printed/archived)
+        // IT may fill Records / PCSF fields until the record is hard-locked (printed/archived)
         if ($role === ROLE_IT) {
             return false;
         }

@@ -11,6 +11,8 @@ $user      = currentUser();
 $roleRaw   = (string) ($user['role'] ?? '');
 $role      = Permissions::normalizeRole($roleRaw);
 
+Permissions::requireCanAny(['patient.create', 'patient.view']);
+
 // Receptionist does not encode — queue management only
 if ($role === ROLE_RECEPTIONIST) {
     header('Location: ' . BASE_URL . '/reception/queue.php');
@@ -212,7 +214,7 @@ if ($pageParam !== '') {
 } elseif ($isNewConsultation) {
     $startPage = FormRenderer::getPageIndex('itr');
 } elseif ($isNew && $role === ROLE_RECORDS) {
-    // PKRF is IT-owned — start Records on Enrollment so identity fields are editable
+    // PCSF is IT-owned — start Records on Enrollment so identity fields are editable
     $enrollIdx = FormRenderer::getPageIndex('enrollment');
     if ($enrollIdx >= 0) {
         $startPage = $enrollIdx;
@@ -460,7 +462,7 @@ window.RHU_FORM = {
     ], JSON_UNESCAPED_UNICODE) ?>,
     paperPageIds: <?= json_encode(array_values(array_map(static fn($p) => $p['id'], array_filter($flatPages, static fn($p) => empty($p['is_review']))))) ?>,
     completenessPageMap: <?= json_encode([
-        'pkrf' => 'pkrf',
+        'pcsf' => 'pcsf',
         'itr' => 'itr',
         'enrollment' => 'enrollment',
         'past_medical_history' => 'history',

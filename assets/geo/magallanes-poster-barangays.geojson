@@ -1,0 +1,91 @@
+{
+    "type": "FeatureCollection",
+    "metadata": {
+        "crs": "poster_pixels",
+        "image_width": 457,
+        "image_height": 532,
+        "note": "Coordinates are [x, y] pixels on magallanes-map-reference.png (top-left origin). Edit rings to match the LGU poster."
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "properties": { "name": "Caloc-an", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [252, 92], [446, 88], [444, 235], [350, 250], [278, 240], [255, 190], [252, 92]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Taod-oy", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [350, 250], [444, 235], [442, 385], [285, 378], [265, 310], [350, 250]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Guiasan", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [142, 378], [285, 378], [265, 310], [188, 248], [172, 295], [158, 338], [142, 378]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Buhang", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [255, 190], [278, 240], [265, 310], [228, 295], [205, 245], [218, 198], [255, 190]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Marcos", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [178, 115], [252, 92], [255, 190], [218, 198], [205, 245], [168, 228], [145, 185], [178, 115]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Poblacion", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [118, 295], [168, 228], [205, 245], [228, 295], [205, 355], [155, 352], [128, 325], [118, 295]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Santo Rosario", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [118, 185], [145, 185], [168, 228], [118, 295], [82, 275], [55, 240], [68, 200], [118, 185]
+                ]]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": { "name": "Santo Niño", "role": "barangay" },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [55, 240], [82, 275], [128, 325], [155, 352], [142, 378], [98, 395], [45, 385], [40, 310], [55, 240]
+                ]]
+            }
+        }
+    ]
+}

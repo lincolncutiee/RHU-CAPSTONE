@@ -44,56 +44,56 @@ $ekasServices = [
     <table class="pf-table" style="font-size:7.5pt;">
         <tr>
             <td style="width:38%;">
-                <span class="pf-label">HCI NAME</span>
+                <?= $P::label('HCI NAME', 'ekas_hci_name') ?>
                 <?= $P::line('ekas_hci_name', $role, $fg, $lockRecords, true) ?>
             </td>
             <td style="width:18%;">
-                <span class="pf-label">Case No.</span>
+                <?= $P::label('Case No.', 'ekas_case_no', false) ?>
                 <?= $P::line('ekas_case_no', $role, $fg, $lockRecords, true) ?>
             </td>
             <td style="width:22%;">
-                <span class="pf-label">HCI Accreditation No.</span>
+                <?= $P::label('HCI Accreditation No.', 'ekas_accreditation_no', false) ?>
                 <?= $P::line('ekas_accreditation_no', $role, $fg, $lockRecords, true) ?>
             </td>
             <td style="width:22%;">
-                <span class="pf-label">Transaction No.</span>
+                <?= $P::label('Transaction No.', 'ekas_transaction_no', false) ?>
                 <?= $P::line('ekas_transaction_no', $role, $fg, $lockRecords, true) ?>
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span class="pf-label">PIN (PhilHealth Identification Number)</span>
+                <?= $P::label('PIN (PhilHealth Identification Number)', 'philhealth_no') ?>
                 <?= $P::line('philhealth_no', $role, $fg, $lockRecords) ?>
             </td>
             <td colspan="2">
-                <span class="pf-label">Membership Category (Kategorya ng pagiging Miyembro)</span>
+                <?= $P::label('Membership Category (Kategorya ng pagiging Miyembro)', 'philhealth_category', false) ?>
                 <?= $P::line('philhealth_category', $role, $fg, $lockRecords) ?>
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span class="pf-label">Patient Name (Pangalan ng Pasyente)</span>
+                <?= $P::label('Patient Name (Pangalan ng Pasyente)', 'ekas_patient_name', false) ?>
                 <?= $P::line('ekas_patient_name', $role, $fg, $lockRecords, true) ?>
             </td>
             <td>
-                <span class="pf-label">Age (Edad)</span>
+                <?= $P::label('Age (Edad)', 'itr_age', false) ?>
                 <?= $P::line('itr_age', $role, $fg, $lockRecords, true) ?>
             </td>
             <td>
-                <span class="pf-label">Contact No. (Numero ng Telepono)</span>
+                <?= $P::label('Contact No. (Numero ng Telepono)', 'contact_number', false) ?>
                 <?= $P::line('contact_number', $role, $fg, $lockRecords) ?>
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span class="pf-label">Membership Type</span>
+                <?= $P::label('Membership Type', 'philhealth_status_type', false) ?>
                 <div style="margin-top:2px;">
                     <?= $P::radio('philhealth_status_type', 'Member', 'MEMBER', $role, $fg, $lockRecords) ?>
                     <?= $P::radio('philhealth_status_type', 'Dependent', 'DEPENDENT', $role, $fg, $lockRecords) ?>
                 </div>
             </td>
             <td colspan="2">
-                <span class="pf-label">Authorization Transaction Code (ATC)</span>
+                <?= $P::label('Authorization Transaction Code (ATC)', 'ekas_atc', false) ?>
                 <?= $P::line('ekas_atc', $role, $fg, $lockRecords, true) ?>
             </td>
         </tr>
@@ -164,7 +164,7 @@ $ekasServices = [
     </p>
 
     <div class="pf-field-row" style="margin-top:8px;">
-        <span class="pf-label">PhilHealth Identification Number of Patient:</span>
+        <?= $P::label('PhilHealth Identification Number of Patient:', 'ekas_feedback_pin', false) ?>
         <?= $P::line('ekas_feedback_pin', $role, $fg, $lockRecords, true) ?>
     </div>
 </div>

@@ -37,7 +37,7 @@ $facilityName = 'MAGALLANES RURAL HEALTH & FAMILY PLANNING CENTER';
 
             <div class="pf-field-row">
                 <strong style="text-decoration:underline;">Sexual History Screening</strong><br>
-                <span class="pf-label">Sexually Active</span>
+                <?= $P::label('Sexually Active', 'psh_sexually_active') ?>
                 <?= $P::radio('psh_sexually_active', 'Yes', 'Yes', $role, $fg, $lockRecords, true) ?>
                 <?= $P::radio('psh_sexually_active', 'No', 'No', $role, $fg, $lockRecords, true) ?>
             </div>

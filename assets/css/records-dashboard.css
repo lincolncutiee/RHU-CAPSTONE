@@ -1,0 +1,104 @@
+/* Records Office dashboard — extends IT dashboard layout */
+
+.page-content:has(.rcd-page),
+.main-content:has(.rcd-page) {
+    background: #f0fdf4;
+}
+
+.rcd-page .rcd-kicker {
+    color: #15803d;
+}
+
+.rcd-page .itd-stat-card--draft {
+    border-color: #cbd5e1;
+}
+
+.rcd-page .itd-badge--draft {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.rcd-week-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.35rem;
+    min-height: 120px;
+    padding: 0.5rem 0.25rem 0;
+}
+
+.rcd-chart__col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.rcd-chart__count {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.rcd-chart__bar {
+    width: 100%;
+    max-width: 28px;
+    min-height: 8px;
+    border-radius: 4px 4px 0 0;
+    background: #86efac;
+}
+
+.rcd-chart__bar.is-today {
+    background: #16a34a;
+}
+
+.rcd-chart__label {
+    font-size: 0.62rem;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.rcd-recent-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.rcd-recent-item {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.rcd-recent-item:last-child {
+    border-bottom: none;
+}
+
+.rcd-recent-name {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #0f172a;
+    text-decoration: none;
+}
+
+.rcd-recent-name:hover {
+    color: #15803d;
+}
+
+.rcd-recent-meta {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.rcd-quick-links .itd-card__body {
+    padding: 0.75rem;
+}
+
+.itd-side-empty {
+    padding: 1rem 0.75rem;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #64748b;
+}

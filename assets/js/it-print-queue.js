@@ -210,8 +210,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    /** @type {Window|null} */
+    let activePrintPopup = null;
+    let printBatchStarting = false;
+
     document.getElementById('pqPrintSelected')?.addEventListener('click', async () => {
+        if (printBatchStarting || printingBusy) return;
         if (!activeJob?.patientDbId) return;
+        printBatchStarting = true;
+        try {
         const selected = Array.from(document.querySelectorAll('#pqFormChecklist input[type="checkbox"]:checked'))
             .map((cb) => cb.value)
             .filter(Boolean);
@@ -259,6 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         await printNextDocument();
+        } finally {
+            printBatchStarting = false;
+        }
     });
 
     function escapeHtml(text) {
@@ -331,57 +341,132 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const url = documentPreviewUrl(docId);
-
-        // Unload previous heavy preview first — prevents Chrome STATUS_BREAKPOINT crashes
-        if (frame) {
-            frame.src = 'about:blank';
-            await sleep(120);
-            await loadFrame(frame, url);
-        }
-
         updateProgressUi(docId);
 
         const modalEl = document.getElementById('pqPreviewModal');
-        if (modalEl && window.bootstrap) {
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-        }
+        const popupOpened = openPrintPopup(url, docId);
+        const doPrintBtn = document.getElementById('pqDoPrint');
 
-        // Print from a dedicated popup window (safer than iframe.print on the queue tab)
-        printingBusy = false;
-        updateProgressUi(docId);
-        openPrintPopup(url, docId);
-    }
-
-    function openPrintPopup(url, docId) {
-        const printUrl = url + (url.includes('?') ? '&' : '?') + 'autoprint=1';
-        const name = `rhu_print_${docId}_${Date.now()}`;
-        let popup = null;
-        try {
-            popup = window.open(printUrl, name, 'noopener,noreferrer,width=960,height=720');
-        } catch (e) {
-            popup = null;
-        }
-
-        if (!popup) {
-            // Popup blocked — fall back to iframe print after a short settle
-            const frame = document.getElementById('pqPreviewFrame');
+        if (popupOpened) {
+            // Print dialog opens from parent via printjob=1 popup — skip iframe (avoids double dialog).
+            if (frame) {
+                frame.src = 'about:blank';
+            }
+            if (doPrintBtn) {
+                doPrintBtn.classList.add('d-none');
+            }
+            if (modalEl && window.bootstrap) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+        } else {
+            // Popup blocked — single path: iframe preview + print from iframe
+            if (doPrintBtn) {
+                doPrintBtn.classList.remove('d-none');
+            }
+            if (frame) {
+                frame.src = 'about:blank';
+                await sleep(120);
+                await loadFrame(frame, url);
+            }
+            if (modalEl && window.bootstrap) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
             setTimeout(() => {
                 try {
                     frame?.contentWindow?.focus();
                     frame?.contentWindow?.print();
                 } catch (e) { /* ignore */ }
             }, 600);
+        }
+
+        printingBusy = false;
+        updateProgressUi(docId);
+    }
+
+    /** @returns {boolean} true when the print popup opened */
+    function openPrintPopup(url, docId) {
+        const printUrl = url + (url.includes('?') ? '&' : '?') + 'printjob=1';
+
+        if (activePrintPopup && !activePrintPopup.closed) {
+            try {
+                activePrintPopup.location.href = printUrl;
+                activePrintPopup.focus();
+                triggerPopupPrintOnce(activePrintPopup);
+                return true;
+            } catch (e) {
+                activePrintPopup = null;
+            }
+        }
+
+        const name = `rhu_print_${docId}_${Date.now()}`;
+        let popup = null;
+        try {
+            // Do not use noopener — parent must call print() exactly once after load.
+            popup = window.open(printUrl, name, 'noreferrer,width=960,height=720');
+        } catch (e) {
+            popup = null;
+        }
+
+        if (!popup) {
             if (window.Swal) {
                 Swal.fire({
                     icon: 'info',
                     title: 'Allow pop-ups for printing',
-                    text: 'Chrome blocked the print window. Allow pop-ups for this site, or use “Print This Form”.',
+                    text: 'Chrome blocked the print window. Printing from the preview below instead.',
                     confirmButtonColor: '#1a6fc4',
                     timer: 3500,
                     showConfirmButton: true,
                 });
             }
+            return false;
         }
+
+        activePrintPopup = popup;
+        triggerPopupPrintOnce(popup);
+        return true;
+    }
+
+    function triggerPopupPrintOnce(popup) {
+        let fired = false;
+        const deadline = Date.now() + 20000;
+
+        const attempt = () => {
+            if (fired || Date.now() > deadline) {
+                return;
+            }
+            if (popup.closed) {
+                activePrintPopup = null;
+                return;
+            }
+
+            let ready = false;
+            let previewReady = false;
+            try {
+                ready = popup.document?.readyState === 'complete';
+                previewReady = popup.__RHU_PREVIEW_READY === true;
+            } catch (e) {
+                ready = false;
+                previewReady = false;
+            }
+
+            if (!ready || !previewReady) {
+                setTimeout(attempt, 150);
+                return;
+            }
+
+            fired = true;
+            setTimeout(() => {
+                if (popup.closed) {
+                    return;
+                }
+                try {
+                    popup.focus();
+                    popup.print();
+                } catch (e) { /* ignore */ }
+            }, 350);
+        };
+
+        setTimeout(attempt, 300);
     }
 
     function sleep(ms) {
@@ -467,6 +552,14 @@ document.addEventListener('DOMContentLoaded', () => {
             printBatch = [];
         }
     });
+
+    const preselectPatientId = new URLSearchParams(window.location.search).get('patient_id');
+    if (preselectPatientId && search) {
+        search.value = preselectPatientId;
+        if (status) {
+            status.value = 'ready';
+        }
+    }
 
     render();
 });

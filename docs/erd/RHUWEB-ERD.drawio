@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-11-04T14:53:22.700Z" agent="RHUWEB docs/erd" version="22.1.0" type="device">
+  <diagram name="01 - Core ERD" id="page-core">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="e_roles" value="<b>roles</b><br/>• id PK<br/>• slug UK (records_office, it_department,<br/>• doctor, pharmacy, system_administrator, …)<br/>• receptionist = reserved (optional queue path)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_users" value="<b>users</b><br/>• id PK<br/>• role_id FK → roles<br/>• username UK<br/>• password_hash<br/>• full_name<br/>• can_access_admin" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="220" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_patients" value="<b>patients</b><br/>• id PK<br/>• patient_id UK<br/>• demographics (Form 1)<br/>• residential_address<br/>• status — workflow ENUM (capstone path):<br/>•   Draft → Pending IT Review → Waiting for Doctor →<br/>•   Waiting for Pharmacy → Dispensing → Dispensed →<br/>•   Ready for Printing → Printed → Archived<br/>• encoded_by FK → users<br/>• validated_by FK → users<br/>• physical_recorded" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="320" y="180" width="300" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_treatment_records" value="<b>treatment_records</b><br/>• id PK<br/>• patient_id FK → patients<br/>• date_of_consultation<br/>• vitals, chief_complaints<br/>• diagnosis (legacy text)<br/>• medication_treatment<br/>• healthcare_provider" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="320" y="420" width="280" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_workflow_logs" value="<b>workflow_logs</b><br/>• id PK<br/>• patient_id FK<br/>• user_id FK<br/>• action, from_status, to_status" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="640" y="180" width="240" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_reception_queue" value="<b>reception_queue</b> (optional — not in capstone workflow)<br/>• id PK<br/>• patient_id FK → patients<br/>• consultation_id → treatment_records (optional)<br/>• queue_date, queue_number, desk_status<br/>• created_by FK → users" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="280" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_diagnosis_master" value="<b>diagnosis_master</b><br/>• id PK<br/>• icd_code<br/>• diagnosis_name<br/>• status" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="680" y="420" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_medication_master" value="<b>medication_master</b><br/>• id PK<br/>• generic_name<br/>• brand_name, strength<br/>• status" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="680" y="580" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_consultation_diagnoses" value="<b>consultation_diagnoses</b><br/>• id PK<br/>• consultation_id → treatment_records<br/>• diagnosis_id FK → diagnosis_master" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="960" y="400" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_consultation_medications" value="<b>consultation_medications</b><br/>• id PK<br/>• consultation_id → treatment_records<br/>• medication_id FK → medication_master" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="960" y="560" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_patient_historical_records" value="<b>patient_historical_records</b><br/>• id PK<br/>• patient_id FK<br/>• record_type, record_date<br/>• original_photo_path<br/>• reviewed_data (JSON)<br/>• uploaded_by FK → users" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="640" y="40" width="280" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_2" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_roles" target="e_users">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_3" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="encodes" edge="1" parent="1" source="e_users" target="e_patients">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_4" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="validates" edge="1" parent="1" source="e_users" target="e_patients">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_5" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N consults" edge="1" parent="1" source="e_patients" target="e_treatment_records">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_6" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_patients" target="e_workflow_logs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_7" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="actor" edge="1" parent="1" source="e_users" target="e_workflow_logs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_8" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N per queue_date" edge="1" parent="1" source="e_patients" target="e_reception_queue">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_9" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="receptionist created_by" edge="1" parent="1" source="e_users" target="e_reception_queue">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_10" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="optional link" edge="1" parent="1" source="e_treatment_records" target="e_reception_queue">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_11" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_treatment_records" target="e_consultation_diagnoses">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_12" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="N:1" edge="1" parent="1" source="e_diagnosis_master" target="e_consultation_diagnoses">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_13" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_treatment_records" target="e_consultation_medications">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_14" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="N:1" edge="1" parent="1" source="e_medication_master" target="e_consultation_medications">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_15" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_patients" target="e_patient_historical_records">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_16" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="uploads" edge="1" parent="1" source="e_users" target="e_patient_historical_records">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="02 - Admin & Reminders" id="page-admin">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="e_roles" value="<b>roles</b><br/>• id PK<br/>• slug UK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_role_permissions" value="<b>role_permissions</b><br/>• role_slug PK (→ roles.slug)<br/>• permission_key PK<br/>• allowed" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="40" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_users" value="<b>users</b><br/>• id PK<br/>• username" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_field_privileges" value="<b>user_field_privileges</b><br/>• user_id PK FK<br/>• field_group PK<br/>• access_level" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="200" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_notifications" value="<b>notifications</b><br/>• id PK<br/>• user_id FK<br/>• patient_id (optional)<br/>• title, message, is_read" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_admin_audit_log" value="<b>admin_audit_log</b><br/>• id PK<br/>• actor_user_id FK<br/>• action, target_type<br/>• details (JSON)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="360" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_form_template_strings" value="<b>form_template_strings</b><br/>• template_key PK<br/>• default_text, custom_text<br/>• updated_by FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="600" y="40" width="280" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_system_branding" value="<b>system_branding</b><br/>• id PK (=1)<br/>• logo_path, facility_name<br/>• updated_by FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="600" y="180" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_reminder_settings" value="<b>reminder_settings</b><br/>• id PK (=1)<br/>• SMS / SMTP config<br/>• templates<br/>• updated_by FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="600" y="320" width="280" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_patients" value="<b>patients</b><br/>• id PK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_treatment_records" value="<b>treatment_records</b><br/>• id PK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="280" y="540" width="220" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_patient_follow_ups" value="<b>patient_follow_ups</b><br/>• id PK<br/>• patient_id FK<br/>• consultation_id FK (unique)<br/>• follow_up_date, status<br/>• created_by FK" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="540" y="500" width="280" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_patient_reminder_messages" value="<b>patient_reminder_messages</b><br/>• id PK<br/>• follow_up_id FK<br/>• patient_id FK<br/>• channel, status<br/>• scheduled_for, sent_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="880" y="500" width="300" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_2" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="slug" edge="1" parent="1" source="e_roles" target="e_role_permissions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_3" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_users" target="e_user_field_privileges">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_4" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_users" target="e_notifications">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_5" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_users" target="e_admin_audit_log">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_6" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="updates" edge="1" parent="1" source="e_users" target="e_form_template_strings">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_7" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="updates" edge="1" parent="1" source="e_users" target="e_system_branding">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_8" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="updates" edge="1" parent="1" source="e_users" target="e_reminder_settings">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_9" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_patients" target="e_patient_follow_ups">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_10" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="0..1" edge="1" parent="1" source="e_treatment_records" target="e_patient_follow_ups">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_11" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_patient_follow_ups" target="e_patient_reminder_messages">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_12" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="1:N" edge="1" parent="1" source="e_patients" target="e_patient_reminder_messages">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="03 - Analytics (logical)" id="page-analytics">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="e__note" value="<b>_note</b><br/>• No separate tables for Reports or Heat Map.<br/>• Queries join: patients + treatment_records + consultation_diagnoses + diagnosis_master<br/>• Geography from patients.residential_address (barangay) via HeatMap core.<br/>• Forecast (ReportForecast) = computed from diagnosis history, not stored." style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="720" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_patients" value="<b>patients</b><br/>• residential_address<br/>• sex, birth_date" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="240" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_treatment_records" value="<b>treatment_records</b><br/>• date_of_consultation<br/>• healthcare_provider" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="320" y="220" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_consultation_diagnoses" value="<b>consultation_diagnoses</b><br/>• consultation_id<br/>• diagnosis_id" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="620" y="220" width="260" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_diagnosis_master" value="<b>diagnosis_master</b><br/>• diagnosis_name<br/>• icd_code" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="920" y="220" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_Reports module (read-only)" value="<b>Reports module (read-only)</b><br/>• Common diseases chart<br/>• Cases by barangay<br/>• Trend & projection" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="320" y="420" width="320" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_Heat map module (read-only)" value="<b>Heat map module (read-only)</b><br/>• Barangay case density<br/>• Filter by disease / date" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="680" y="420" width="280" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_2" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="e_patients" target="e_treatment_records">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_3" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="e_treatment_records" target="e_consultation_diagnoses">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_4" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" edge="1" parent="1" source="e_diagnosis_master" target="e_consultation_diagnoses">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_5" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="aggregates" edge="1" parent="1" source="e_treatment_records" target="e_Reports module (read-only)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_6" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="filters" edge="1" parent="1" source="e_patients" target="e_Reports module (read-only)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_7" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="geo" edge="1" parent="1" source="e_patients" target="e_Heat map module (read-only)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_8" style="edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;startArrow=ERone;" value="disease filter" edge="1" parent="1" source="e_consultation_diagnoses" target="e_Heat map module (read-only)">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="04 - Workflow (Capstone — No Receptionist)" id="page-workflow-capstone">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="fn_legend_cap" value="<b>Capstone workflow</b> — state on <b>patients.status</b>, history in <b>workflow_logs</b> (<b>core/Workflow.php</b>).<br/>Roles: <b>Records → IT → Doctor → Pharmacy → IT</b> (print/archive). Receptionist path not used." style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="920" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_records" value="<b>Records Office</b><br/>Draft / Returned / Rejected" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_it_review" value="<b>Pending IT Review</b>" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="280" y="130" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_doctor" value="<b>Waiting for Doctor</b>" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="520" y="130" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_pharm" value="<b>Pharmacy</b><br/>Waiting → Dispensing → Dispensed" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="120" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_it_print" value="<b>IT Print</b><br/>Ready for Printing → Printed → Archived" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="120" width="220" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="wedge_1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="submit_to_it_review" edge="1" parent="1" source="w_records" target="w_it_review">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wedge_2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="send_to_doctor" edge="1" parent="1" source="w_records" target="w_doctor">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="130" y="260"/><mxPoint x="610" y="260"/></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wedge_3" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;dashed=1;" value="return_for_correction" edge="1" parent="1" source="w_it_review" target="w_records">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="370" y="230"/><mxPoint x="130" y="230"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="wedge_4" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="send_to_doctor" edge="1" parent="1" source="w_it_review" target="w_doctor">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wedge_5" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="send_to_pharmacy" edge="1" parent="1" source="w_doctor" target="w_pharm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="wedge_6" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="approve_for_printing" edge="1" parent="1" source="w_pharm" target="w_it_print">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="w_note" value="Entities: patients (status) · treatment_records · consultation_diagnoses · consultation_medications · workflow_logs" style="text;html=1;strokeColor=none;fillColor=none;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="700" height="30" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="05 - Workflow (Optional Receptionist)" id="page-workflow">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="fn_legend" value="<b>Not in capstone scope.</b> Optional DB/code path: Pending Receptionist + reception_queue → forward_to_doctor. Use tab <b>04</b> for thesis workflow." style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="900" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_Records Office" value="<b>Records Office</b><br/>Draft / Returned for Correction" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="200" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_Pending Receptionist" value="<b>Pending Receptionist</b><br/>patients.status<br/>Owner: receptionist role" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="320" y="200" width="220" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_reception_queue" value="<b>reception_queue</b><br/>Daily queue #, desk_status<br/>forward_to_doctor action" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="320" y="320" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_Waiting for Doctor" value="<b>Waiting for Doctor</b><br/>patients.status<br/>Owner: doctor role" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="200" width="200" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_Pharmacy chain" value="<b>Pharmacy chain</b><br/>Waiting for Pharmacy → Dispensing<br/>→ Dispensed" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="860" y="200" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_IT validate / print" value="<b>IT validate / print</b><br/>Pending IT Validation<br/>→ Ready for Printing → Printed" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="200" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="fedge_2" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="submit_for_consultation" edge="1" parent="1" source="f_Records Office" target="f_Pending Receptionist">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="fedge_3" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="queue entry" edge="1" parent="1" source="f_Pending Receptionist" target="f_reception_queue">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="fedge_4" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="forward_to_doctor" edge="1" parent="1" source="f_reception_queue" target="f_Waiting for Doctor">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="fedge_5" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="complete_consultation" edge="1" parent="1" source="f_Waiting for Doctor" target="f_Pharmacy chain">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="fedge_6" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="approve_for_printing" edge="1" parent="1" source="f_Pharmacy chain" target="f_IT validate / print">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f_Alternate: IT encoding path" value="<b>Alternate: IT encoding path</b><br/>Records/IT: submit_to_it_review<br/>IT: send_to_doctor" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="480" width="240" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="fedge_7" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;" value="skips reception desk" edge="1" parent="1" source="f_Alternate: IT encoding path" target="f_Waiting for Doctor">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

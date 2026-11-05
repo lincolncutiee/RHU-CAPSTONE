@@ -337,6 +337,17 @@ const PatientLiveSearch = (() => {
                         }
                     },
                 });
+            } else if (variant === 'historical-pick') {
+                initWidget(root, {
+                    navigateOnSelect: false,
+                    onSelect: (patient) => {
+                        if (typeof window.HistoricalRecordPatientPick === 'function') {
+                            window.HistoricalRecordPatientPick(patient);
+                        }
+                        root.querySelector('.patient-search-input')?.blur();
+                        root.querySelector('.patient-search-dropdown')?.classList.remove('is-open');
+                    },
+                });
             } else {
                 initWidget(root, { navigateOnSelect: true });
             }

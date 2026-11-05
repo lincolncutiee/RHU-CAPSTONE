@@ -6,11 +6,16 @@
  * Field groups:
  * - records_enrollment / records_consent / records_treatment → Records Office
  * - doctor → Doctor (clinical findings + EKAS + EPRESS)
- * - it → IT Department (patient encoding + PhilHealth PKRF)
+ * - it → IT Department (patient encoding + PhilHealth PCSF)
  * - receptionist → Receptionist (reserved)
  */
 
 return [
+    ROLE_SYSTEM_ADMIN => [
+        'label'    => 'System Administrator',
+        'editable' => [],
+        'readonly' => ['records_enrollment', 'records_consent', 'records_treatment', 'doctor', 'it', 'receptionist', 'pharmacy'],
+    ],
     ROLE_RECORDS => [
         'label'    => 'Records Office Staff',
         'editable' => ['records_enrollment', 'records_consent', 'records_treatment'],
@@ -23,7 +28,7 @@ return [
     ],
     ROLE_IT => [
         'label'    => 'IT Department',
-        // IT can encode / complete Records Office fields + PKRF; doctor clinical stays readonly
+        // IT can encode / complete Records Office fields + PCSF; doctor clinical stays readonly
         'editable' => ['it', 'records_enrollment', 'records_consent', 'records_treatment'],
         'readonly' => ['doctor', 'receptionist'],
     ],

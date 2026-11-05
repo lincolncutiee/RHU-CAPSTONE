@@ -6,14 +6,51 @@
  * Live patient search appears only on Patient Records (browse/locate folders).
  * Patient Encoding stays focused on one patient at a time.
  */
+require_once __DIR__ . '/../core/Permissions.php';
+require_once __DIR__ . '/../core/AdminAccess.php';
+
 $userRole = $user['role'] ?? '';
 $isIt = $userRole === ROLE_IT;
+$isSystemAdmin = $userRole === ROLE_SYSTEM_ADMIN;
+$canAdmin = AdminAccess::canAccess($user);
+$canHeatMap = Permissions::can('heatmap.view');
+$canPatientRecords = Permissions::can('patient.view');
+$canPatientEncoding = Permissions::can('patient.create');
+$canDoctorQueue = Permissions::can('clinical.queue');
+$canPharmacyQueue = Permissions::can('pharmacy.queue');
+$canItValidation = Permissions::can('it.validation_queue');
+$canItPrint = Permissions::can('it.print_queue');
+$canAdminUsers = Permissions::can('admin.users');
+$canAdminRoles = Permissions::can('admin.roles');
+$canAdminTemplates = Permissions::can('admin.templates');
+$canAdminAudit = Permissions::can('admin.audit');
+$canAdminMessaging = Permissions::can('admin.messaging');
+$canReports = Permissions::can('reports.view');
+$homeHref = $isSystemAdmin ? BASE_URL . '/admin/users.php' : BASE_URL . '/dashboard.php';
+$brandingSiteTitle = 'RHU Magallanes';
+$brandingSiteSubtitle = 'Agusan del Norte';
+$brandingLogoUrl = BASE_URL . '/assets/img/rhu-magallanes-logo.png';
+try {
+    require_once __DIR__ . '/../core/FormTemplate.php';
+    $branding = FormTemplate::branding();
+    $brandingSiteTitle = $branding['site_title'] ?? $brandingSiteTitle;
+    $brandingSiteSubtitle = $branding['site_subtitle'] ?? $brandingSiteSubtitle;
+    $brandingLogoUrl = FormTemplate::logoUrl();
+} catch (Throwable $e) {
+    // use defaults
+}
 $isRecords = $userRole === ROLE_RECORDS;
 $isReceptionist = $userRole === ROLE_RECEPTIONIST;
 $isDoctor = $userRole === ROLE_DOCTOR;
 $isPharmacy = $userRole === ROLE_PHARMACY;
 $showPatientSearch = (($activePage ?? '') === 'records') && empty($hidePatientSearch);
 $topnavClass = $showPatientSearch ? 'app-topnav' : 'app-topnav app-topnav--compact';
+
+$topnavUserSubline = trim((string) ($user['role_name'] ?? ''));
+$topnavUserName = trim((string) ($user['full_name'] ?? 'User'));
+if ($topnavUserSubline === '' || strcasecmp($topnavUserSubline, $topnavUserName) === 0) {
+    $topnavUserSubline = '@' . trim((string) ($user['username'] ?? 'user'));
+}
 
 $notifyCount = 0;
 try {
@@ -27,15 +64,15 @@ try {
 ?>
 <header class="<?= $topnavClass ?>" id="appTopnav">
   <div class="topnav-row topnav-primary">
-    <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-brand">
+    <a href="<?= $homeHref ?>" class="topnav-brand">
       <span class="topnav-brand-icon">
-        <img src="<?= BASE_URL ?>/assets/img/rhu-magallanes-logo.png"
-             alt="RHU Magallanes"
+        <img src="<?= htmlspecialchars($brandingLogoUrl) ?>"
+             alt="<?= htmlspecialchars($brandingSiteTitle) ?>"
              width="36" height="36">
       </span>
       <span class="topnav-brand-text">
-        <span class="topnav-brand-title">RHU Magallanes</span>
-        <span class="topnav-brand-sub">Agusan del Norte</span>
+        <span class="topnav-brand-title"><?= htmlspecialchars($brandingSiteTitle) ?></span>
+        <span class="topnav-brand-sub"><?= htmlspecialchars($brandingSiteSubtitle) ?></span>
       </span>
     </a>
 
@@ -44,20 +81,34 @@ try {
     </button>
 
     <nav class="topnav-menu" id="topnavMenu" aria-label="Main">
-      <?php if ($isReceptionist): ?>
+      <?php if ($isSystemAdmin && $canAdmin): ?>
+        <?php if ($canAdminUsers): ?>
+        <a href="<?= BASE_URL ?>/admin/users.php" class="topnav-link <?= ($adminSection ?? 'users') === 'users' ? 'is-active' : '' ?>">Users</a>
+        <?php endif; ?>
+        <?php if ($canAdminRoles): ?>
+        <a href="<?= BASE_URL ?>/admin/roles.php" class="topnav-link <?= ($adminSection ?? '') === 'roles' ? 'is-active' : '' ?>">Roles &amp; permissions</a>
+        <?php endif; ?>
+        <?php if ($canAdminTemplates): ?>
+        <a href="<?= BASE_URL ?>/admin/templates.php" class="topnav-link <?= ($adminSection ?? '') === 'templates' ? 'is-active' : '' ?>">Form &amp; logo</a>
+        <?php endif; ?>
+        <?php if ($canAdminAudit): ?>
+        <a href="<?= BASE_URL ?>/admin/audit.php" class="topnav-link <?= ($adminSection ?? '') === 'audit' ? 'is-active' : '' ?>">Audit log</a>
+        <?php endif; ?>
+        <?php if ($canAdminMessaging): ?>
+        <a href="<?= BASE_URL ?>/admin/messaging.php" class="topnav-link <?= ($adminSection ?? '') === 'messaging' ? 'is-active' : '' ?>">Messaging</a>
+        <?php endif; ?>
+      <?php elseif ($isReceptionist): ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= ($activePage ?? '') === 'dashboard' ? 'is-active' : '' ?>">Dashboard</a>
         <a href="<?= BASE_URL ?>/reception/queue.php" class="topnav-link <?= ($activePage ?? '') === 'workflow' ? 'is-active' : '' ?>">My Queue</a>
+        <?php if ($canPatientRecords): ?>
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records (View Only)</a>
-        <div class="dropdown topnav-dropdown">
-          <button type="button" class="topnav-link topnav-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Reports <i class="bi bi-chevron-down"></i>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end topnav-dropdown-menu">
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/dashboard.php">Dashboard Overview</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/patient-records.php">Patient Registry</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/reception/queue.php">Reception Queue</a></li>
-          </ul>
-        </div>
+        <?php endif; ?>
+        <?php if ($canReports): ?>
+        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
+        <?php endif; ?>
+        <?php if ($canHeatMap): ?>
+        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php endif; ?>
       <?php elseif ($isIt): ?>
         <?php
         $printReadyCount = 0;
@@ -69,44 +120,89 @@ try {
         }
         ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= ($activePage ?? '') === 'dashboard' ? 'is-active' : '' ?>">Dashboard</a>
+        <?php if ($canPatientEncoding): ?>
         <a href="<?= BASE_URL ?>/forms/doh-form.php" class="topnav-link <?= ($activePage ?? '') === 'encoding' ? 'is-active' : '' ?>">Patient Encoding</a>
+        <?php endif; ?>
+        <?php if ($canPatientRecords): ?>
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records</a>
+        <?php endif; ?>
+        <?php if ($canItValidation): ?>
+        <a href="<?= BASE_URL ?>/validation-status.php" class="topnav-link <?= ($activePage ?? '') === 'validation' ? 'is-active' : '' ?>">IT Review Queue</a>
+        <?php endif; ?>
+        <?php if ($canItPrint): ?>
         <a href="<?= BASE_URL ?>/it/print-queue.php" class="topnav-link <?= in_array(($activePage ?? ''), ['it-print', 'it-print-queue'], true) ? 'is-active' : '' ?>">
           Print
           <?php if ($printReadyCount > 0): ?>
             <span class="topnav-count-badge"><?= $printReadyCount > 99 ? '99+' : (int) $printReadyCount ?></span>
           <?php endif; ?>
         </a>
-        <div class="dropdown topnav-dropdown">
-          <button type="button" class="topnav-link topnav-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Reports <i class="bi bi-chevron-down"></i>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end topnav-dropdown-menu">
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/dashboard.php">Dashboard Overview</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/patient-records.php">Patient Registry</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/it/print-queue.php">Print</a></li>
-          </ul>
-        </div>
+        <?php endif; ?>
+        <?php if ($canReports): ?>
+        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
+        <?php endif; ?>
+        <?php if ($canHeatMap): ?>
+        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php endif; ?>
       <?php elseif ($isPharmacy): ?>
+        <?php if ($canPharmacyQueue): ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= in_array(($activePage ?? ''), ['dashboard', 'pharmacy'], true) ? 'is-active' : '' ?>">Pharmacy Queue</a>
+        <?php endif; ?>
+        <?php if ($canReports): ?>
+        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
+        <?php endif; ?>
       <?php elseif ($isDoctor): ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= ($activePage ?? '') === 'dashboard' ? 'is-active' : '' ?>">Dashboard</a>
+        <?php if ($canDoctorQueue): ?>
         <a href="<?= BASE_URL ?>/workflow/queue.php" class="topnav-link <?= ($activePage ?? '') === 'workflow' ? 'is-active' : '' ?>">Doctor Consultation</a>
+        <?php endif; ?>
+        <?php if ($canPatientRecords): ?>
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records</a>
+        <?php endif; ?>
+        <?php if ($canReports): ?>
+        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
+        <?php endif; ?>
+        <?php if ($canHeatMap): ?>
+        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php endif; ?>
       <?php else: ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= ($activePage ?? '') === 'dashboard' ? 'is-active' : '' ?>">Dashboard</a>
+        <?php if ($canPatientEncoding): ?>
         <a href="<?= BASE_URL ?>/forms/doh-form.php" class="topnav-link <?= ($activePage ?? '') === 'encoding' ? 'is-active' : '' ?>">Patient Encoding</a>
+        <?php endif; ?>
+        <?php if ($canPatientRecords): ?>
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records</a>
+        <?php endif; ?>
         <?php if (!$isRecords): ?>
           <a href="<?= BASE_URL ?>/workflow/queue.php" class="topnav-link <?= ($activePage ?? '') === 'workflow' ? 'is-active' : '' ?>">My Queue</a>
         <?php endif; ?>
+        <?php if ($canReports): ?>
+        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
+        <?php endif; ?>
+        <?php if ($canHeatMap): ?>
+        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php endif; ?>
+      <?php endif; ?>
+      <?php if ($canAdmin && !$isSystemAdmin): ?>
         <div class="dropdown topnav-dropdown">
-          <button type="button" class="topnav-link topnav-dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Reports <i class="bi bi-chevron-down"></i>
+          <button type="button" class="topnav-link topnav-dropdown-toggle <?= str_starts_with((string) ($activePage ?? ''), 'admin') ? 'is-active' : '' ?>" data-bs-toggle="dropdown" aria-expanded="false">
+            Administration <i class="bi bi-chevron-down"></i>
           </button>
           <ul class="dropdown-menu dropdown-menu-end topnav-dropdown-menu">
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/dashboard.php">Dashboard Overview</a></li>
-            <li><a class="dropdown-item" href="<?= BASE_URL ?>/patient-records.php">Patient Registry</a></li>
+            <?php if ($canAdminUsers): ?>
+            <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/users.php">Users</a></li>
+            <?php endif; ?>
+            <?php if ($canAdminRoles): ?>
+            <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/roles.php">Roles &amp; permissions</a></li>
+            <?php endif; ?>
+            <?php if ($canAdminTemplates): ?>
+            <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/templates.php">Form &amp; logo</a></li>
+            <?php endif; ?>
+            <?php if ($canAdminAudit): ?>
+            <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/audit.php">Audit log</a></li>
+            <?php endif; ?>
+            <?php if ($canAdminMessaging): ?>
+            <li><a class="dropdown-item" href="<?= BASE_URL ?>/admin/messaging.php">Messaging</a></li>
+            <?php endif; ?>
           </ul>
         </div>
       <?php endif; ?>
@@ -124,8 +220,8 @@ try {
         <button type="button" class="topnav-user-btn" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="user-avatar"><i class="bi bi-person-fill"></i></span>
           <span class="user-info d-none d-md-flex">
-            <span class="user-name"><?= htmlspecialchars($user['full_name'] ?? 'User') ?></span>
-            <span class="user-role"><?= htmlspecialchars($user['role_name'] ?? '') ?></span>
+            <span class="user-name"><?= htmlspecialchars($topnavUserName) ?></span>
+            <span class="user-role"><?= htmlspecialchars($topnavUserSubline) ?></span>
           </span>
           <i class="bi bi-chevron-down d-none d-md-inline topnav-user-caret"></i>
         </button>

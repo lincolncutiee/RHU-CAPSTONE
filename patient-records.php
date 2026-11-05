@@ -3,27 +3,34 @@ require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/core/WorkflowStatus.php';
 require_once __DIR__ . '/core/Permissions.php';
 require_once __DIR__ . '/core/MagallanesAddress.php';
+require_once __DIR__ . '/core/HistoricalRecord.php';
+require_once __DIR__ . '/core/MagallanesAddress.php';
 
 requireLogin();
+Permissions::requireCan('patient.view');
 
 $userRole = Permissions::normalizeRole(($user = currentUser())['role'] ?? '');
-if ($userRole === ROLE_PHARMACY) {
-    header('Location: ' . BASE_URL . '/dashboard.php');
-    exit;
-}
 
 $pageTitle         = 'Patient Registry';
 $pageSubtitle      = '';
 $activePage        = 'records';
 $hidePageTitleBar  = true;
 $hidePatientSearch = true;
-$extraCSS          = [BASE_URL . '/assets/css/patient-records.css?v=13'];
-$extraJS           = [BASE_URL . '/assets/js/main.js', BASE_URL . '/assets/js/patient-records.js?v=13'];
-
-include __DIR__ . '/includes/header.php';
 
 $isReceptionistView = $userRole === ROLE_RECEPTIONIST;
 $canEncodeNewPatient = in_array($userRole, [ROLE_RECORDS, ROLE_IT], true);
+$canAddHistorical = HistoricalRecord::canAdd($userRole);
+
+$extraCSS = [BASE_URL . '/assets/css/patient-records.css?v=13'];
+if ($canAddHistorical) {
+    $extraCSS[] = BASE_URL . '/assets/css/historical-record.css?v=8';
+}
+$extraJS = [BASE_URL . '/assets/js/main.js', BASE_URL . '/assets/js/patient-records.js?v=15'];
+if ($canAddHistorical) {
+    $extraJS[] = BASE_URL . '/assets/js/historical-record.js?v=11';
+}
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <?php if ($isReceptionistView): ?>
@@ -101,9 +108,16 @@ $canEncodeNewPatient = in_array($userRole, [ROLE_RECORDS, ROLE_IT], true);
     <button type="button" class="pr-reset" id="btnClearFilters">Reset</button>
 
     <?php if ($canEncodeNewPatient): ?>
-    <a href="<?= BASE_URL ?>/forms/doh-form.php" class="btn btn-outline-primary btn-sm pr-new-patient">
-        <i class="bi bi-plus-lg"></i> New Patient Record
-    </a>
+    <div class="pr-action-buttons">
+        <a href="<?= BASE_URL ?>/forms/doh-form.php" class="btn btn-outline-primary btn-sm pr-new-patient">
+            <i class="bi bi-plus-lg"></i> New Patient Record
+        </a>
+        <?php if ($canAddHistorical): ?>
+        <button type="button" class="btn btn-outline-primary btn-sm pr-new-patient" id="btnAddExistingRecord">
+            <i class="bi bi-plus-lg"></i> Add Existing Record
+        </button>
+        <?php endif; ?>
+    </div>
     <?php endif; ?>
 </div>
 
@@ -135,5 +149,12 @@ $canEncodeNewPatient = in_array($userRole, [ROLE_RECORDS, ROLE_IT], true);
         </div>
     </div>
 </div>
+
+<script>window.PR_USER_ROLE = <?= json_encode($userRole) ?>;</script>
+
+<?php if ($canAddHistorical): ?>
+<script>window.HR_BARANGAYS = <?= json_encode(MagallanesAddress::barangays()) ?>;</script>
+<?php include __DIR__ . '/includes/historical-record-modal.php'; ?>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

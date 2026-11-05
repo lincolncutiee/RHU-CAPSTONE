@@ -8,6 +8,8 @@ require_once __DIR__ . '/../core/ItPrintForms.php';
 require_once __DIR__ . '/../core/WorkflowStatus.php';
 
 requireRole([ROLE_IT]);
+require_once __DIR__ . '/../core/Permissions.php';
+Permissions::requireCan('it.print_queue');
 
 $pageTitle         = 'Print';
 $pageSubtitle      = '';

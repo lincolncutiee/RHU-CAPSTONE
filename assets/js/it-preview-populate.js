@@ -18,16 +18,32 @@ document.addEventListener('DOMContentLoaded', () => {
         el.style.width = '';
     });
 
+    window.__RHU_PREVIEW_READY = true;
+
     if (cfg.autoprint) {
-        // Wait for layout paint before opening the system print dialog
-        setTimeout(() => {
-            try {
-                window.focus();
-                window.print();
-            } catch (e) { /* ignore */ }
-        }, 700);
+        // Legacy manual URLs only — batch print uses parent window.print() on printjob=1 popup.
+        scheduleAutoprintOnce();
     }
 });
+
+function scheduleAutoprintOnce() {
+    if (window.__RHU_AUTOPRINT_SCHEDULED) {
+        return;
+    }
+    window.__RHU_AUTOPRINT_SCHEDULED = true;
+
+    // Wait for layout paint before opening the system print dialog (once only)
+    setTimeout(() => {
+        if (window.__RHU_AUTOPRINT_FIRED) {
+            return;
+        }
+        window.__RHU_AUTOPRINT_FIRED = true;
+        try {
+            window.focus();
+            window.print();
+        } catch (e) { /* ignore */ }
+    }, 700);
+}
 
 function populateRecord(root, patient, treatment, extended) {
     if (!root) return;

@@ -1,0 +1,226 @@
+---
+title: RHUWEB — Entity Relationship (Capstone scope: no receptionist workflow)
+---
+
+%% ============================================================
+%% 1) CORE DATABASE ERD (MySQL tables)
+%% Open in VS Code Mermaid preview, GitHub, or https://mermaid.live
+%% ============================================================
+
+erDiagram
+    roles ||--o{ users : "has"
+    users ||--o{ patients : "encoded_by"
+    users ||--o{ patients : "validated_by"
+    patients ||--o{ treatment_records : "consultations"
+    patients ||--o{ workflow_logs : "audit"
+    users ||--o{ workflow_logs : "actor"
+    patients ||--o{ patient_historical_records : "digitized forms"
+    users ||--o{ patient_historical_records : "uploaded_by"
+
+    treatment_records ||--o{ consultation_diagnoses : "links"
+    diagnosis_master ||--o{ consultation_diagnoses : "ICD row"
+    treatment_records ||--o{ consultation_medications : "links"
+    medication_master ||--o{ consultation_medications : "Rx row"
+
+    patients ||--o{ patient_follow_ups : "reminders"
+    treatment_records |o--o| patient_follow_ups : "from consult"
+    patient_follow_ups ||--o{ patient_reminder_messages : "SMS/email log"
+    patients ||--o{ patient_reminder_messages : "recipient"
+
+    users ||--o{ notifications : "inbox"
+    users ||--o{ admin_audit_log : "actor"
+    users ||--o{ user_field_privileges : "field ACL"
+    roles ||--o{ role_permissions : "slug match"
+
+    roles {
+        int id PK
+        string slug UK
+        string name
+    }
+
+    users {
+        int id PK
+        int role_id FK
+        string username UK
+        string password_hash
+        tinyint can_access_admin
+    }
+
+    patients {
+        int id PK
+        string patient_id UK
+        text demographics_form1
+        enum status "workflow state"
+        int encoded_by FK
+        int validated_by FK
+        tinyint physical_recorded
+    }
+
+    treatment_records {
+        int id PK
+        int patient_id FK
+        date date_of_consultation
+        text chief_complaints
+        text diagnosis "legacy"
+        json it_data
+        json receptionist_data "PCSF etc."
+    }
+
+    workflow_logs {
+        int id PK
+        int patient_id FK
+        int user_id FK
+        string action
+        string from_status
+        string to_status
+    }
+
+    diagnosis_master {
+        int id PK
+        string icd_code
+        string diagnosis_name
+        enum status
+    }
+
+    medication_master {
+        int id PK
+        string generic_name
+        string brand_name
+    }
+
+    consultation_diagnoses {
+        int id PK
+        int consultation_id FK
+        int diagnosis_id FK
+    }
+
+    consultation_medications {
+        int id PK
+        int consultation_id FK
+        int medication_id FK
+    }
+
+    patient_historical_records {
+        int id PK
+        int patient_id FK
+        string record_type
+        string original_photo_path
+        json reviewed_data
+    }
+
+    role_permissions {
+        string role_slug PK
+        string permission_key PK
+        tinyint allowed
+    }
+
+    patient_follow_ups {
+        int id PK
+        int patient_id FK
+        int consultation_id FK
+        date follow_up_date
+    }
+
+    patient_reminder_messages {
+        int id PK
+        int follow_up_id FK
+        string channel
+        string status
+    }
+
+    notifications {
+        int id PK
+        int user_id FK
+        int patient_id
+        tinyint is_read
+    }
+
+    admin_audit_log {
+        bigint id PK
+        int actor_user_id FK
+        string action
+        json details
+    }
+
+    form_template_strings {
+        string template_key PK
+        text default_text
+        text custom_text
+    }
+
+    system_branding {
+        tinyint id PK
+        string facility_name
+    }
+
+    reminder_settings {
+        tinyint id PK
+        text smtp_config
+    }
+
+    user_field_privileges {
+        int user_id PK_FK
+        string field_group PK
+        enum access_level
+    }
+
+%% Optional table — NOT used in capstone workflow (receptionist path)
+%% patients ||--o{ reception_queue : "desk queue"
+%% users ||--o{ reception_queue : "created_by"
+
+%% ============================================================
+%% 2) WORKFLOW (no receptionist) — stored in patients.status + workflow_logs
+%% Logic: core/Workflow.php
+%% ============================================================
+
+flowchart LR
+    subgraph Records["Records Office"]
+        D[Draft / Returned for Correction]
+    end
+
+    subgraph IT["IT Department"]
+        IR[Pending IT Review]
+        SD[Send to Doctor]
+        AP[Approve for Printing]
+        RP[Ready for Printing]
+        PR[Printed]
+        AR[Archived]
+    end
+
+    subgraph Doctor["Doctor"]
+        WD[Waiting for Doctor]
+    end
+
+    subgraph Pharmacy["Pharmacy"]
+        WP[Waiting for Pharmacy]
+        DS[Dispensing]
+        DV[Dispensed]
+    end
+
+    D -->|submit_to_it_review| IR
+    D -->|IT encoding: send_to_doctor| WD
+    IR -->|return_for_correction| D
+    IR -->|send_to_doctor| WD
+    WD -->|complete_consultation| WP
+    WP -->|start_dispensing| DS
+    WP -->|mark_dispensed| DV
+    DS -->|mark_dispensed| DV
+    DV -->|approve_for_printing| RP
+    IR -->|approve_for_printing| RP
+    RP -->|mark_printed| PR
+    PR -->|archive_record| AR
+
+%% ============================================================
+%% 3) ANALYTICS (logical — no extra tables)
+%% Reports + Heat Map read from patients + treatment_records + consultation_diagnoses
+%% ReportForecast = computed projection, not persisted
+%% ============================================================
+
+flowchart TB
+    P[patients] --> TR[treatment_records]
+    TR --> CD[consultation_diagnoses]
+    CD --> DM[diagnosis_master]
+    P --> HM[Heat Map by barangay]
+    TR --> RPT[Reports charts]
+    CD --> RPT
+    TR --> FC[Case forecast projection]

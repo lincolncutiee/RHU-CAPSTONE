@@ -35,7 +35,7 @@ class FormCompleteness
 
         foreach ($rules as $formKey => $rule) {
             $owner = (string) ($rule['owner'] ?? '');
-            // PKRF is completed by IT — skip for everyone in shared completeness UI
+            // PCSF is completed by IT — skip for everyone in shared completeness UI
             if ($owner === 'it') {
                 continue;
             }
@@ -265,7 +265,7 @@ class FormCompleteness
         static $map = [
             'philhealth_no'           => 'PhilHealth PIN',
             'family_serial_number'    => 'Family Serial Number',
-            'pkrf_registration_date'  => 'PKRF Registration Date',
+            'pcsf_date'               => 'PCSF Form Date',
             'date_of_consultation'    => 'Date of Consultation',
             'chief_complaints'        => 'Chief Complaints',
             'mode_of_transaction'     => 'Mode of Transaction',

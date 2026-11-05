@@ -226,11 +226,23 @@ try {
             ClinicalMaster::syncConsultationDiagnoses($conn, $consultationId, $diagnosisIds);
             ClinicalMaster::syncConsultationMedications($conn, $consultationId, $medicationIds);
         }
+
+        require_once __DIR__ . '/../core/FollowUpReminder.php';
+        FollowUpReminder::ensureSchema($conn);
+        if ($consultationId > 0) {
+            FollowUpReminder::syncFromConsultationPost(
+                $conn,
+                $patientDbId,
+                $consultationId,
+                $post,
+                (int) ($user['id'] ?? 0)
+            );
+        }
     }
 
-    // --- Save IT-owned PKRF / PhilHealth registration extended fields ---
+    // --- Save IT-owned PCSF extended fields ---
     if (!$newConsultation && $patientDbId > 0 && Permissions::canEdit($role, 'it')) {
-        saveItPkRfExtended($conn, $patientDbId, $post);
+        saveItPcsfExtended($conn, $patientDbId, $post);
     }
 
     // --- Workflow: submit for consultation ---
@@ -658,9 +670,9 @@ function saveDoctorKonsultaExtended(mysqli $conn, int $patientId, array $post, i
 }
 
 /**
- * Persist PhilHealth PKRF extended fields owned by IT only.
+ * Persist PhilHealth PCSF extended fields owned by IT only.
  */
-function saveItPkRfExtended(mysqli $conn, int $patientId, array $post): void
+function saveItPcsfExtended(mysqli $conn, int $patientId, array $post): void
 {
     $incoming = $post['extended'] ?? [];
     if (!is_array($incoming)) {
@@ -682,7 +694,7 @@ function saveItPkRfExtended(mysqli $conn, int $patientId, array $post): void
     $allowed = [];
     foreach ($incoming as $key => $val) {
         $key = (string) $key;
-        if (str_starts_with($key, 'pkrf_')) {
+        if (str_starts_with($key, 'pcsf_')) {
             $allowed[$key] = is_string($val) ? trim($val) : $val;
             if ($allowed[$key] === '') {
                 $allowed[$key] = null;
@@ -690,9 +702,8 @@ function saveItPkRfExtended(mysqli $conn, int $patientId, array $post): void
         }
     }
 
-    // Also accept flat POST keys used by some form posts
     foreach ($post as $key => $val) {
-        if (!is_string($key) || !str_starts_with($key, 'pkrf_')) {
+        if (!is_string($key) || !str_starts_with($key, 'pcsf_')) {
             continue;
         }
         if (is_array($val)) {

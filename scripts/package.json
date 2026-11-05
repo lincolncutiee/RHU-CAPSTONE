@@ -1,0 +1,9 @@
+{
+  "name": "rhuweb-geo-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "shapefile": "^0.6.6"
+  }
+}
