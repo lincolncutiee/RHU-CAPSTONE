@@ -52,7 +52,7 @@ if ($role === ROLE_PHARMACY) {
     $pharmacyStatusFilter = trim((string) ($_GET['status'] ?? ''));
     $pharmacySearch = trim((string) ($_GET['q'] ?? ''));
     $pharmacySort = trim((string) ($_GET['sort'] ?? 'newest'));
-    if (!in_array($pharmacySort, ['newest', 'oldest', 'status', 'name'], true)) {
+    if (!in_array($pharmacySort, ['newest', 'oldest'], true)) {
         $pharmacySort = 'newest';
     }
     $pharmacyQueue = Pharmacy::listQueue($conn, [

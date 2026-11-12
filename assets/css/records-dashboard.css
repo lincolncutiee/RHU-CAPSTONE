@@ -9,6 +9,18 @@
     color: #15803d;
 }
 
+.rcd-page a.itd-stat-card {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.rcd-page a.itd-stat-card:hover,
+.rcd-page a.itd-stat-card:focus-visible {
+    border-color: #86efac;
+    box-shadow: 0 2px 8px rgba(21, 128, 61, 0.12);
+}
+
 .rcd-page .itd-stat-card--draft {
     border-color: #cbd5e1;
 }

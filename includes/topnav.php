@@ -18,6 +18,7 @@ $canPatientRecords = Permissions::can('patient.view');
 $canPatientEncoding = Permissions::can('patient.create');
 $canDoctorQueue = Permissions::can('clinical.queue');
 $canPharmacyQueue = Permissions::can('pharmacy.queue');
+$canPharmacyDispensedLog = Permissions::can('pharmacy.dispensed_log');
 $canItValidation = Permissions::can('it.validation_queue');
 $canItPrint = Permissions::can('it.print_queue');
 $canAdminUsers = Permissions::can('admin.users');
@@ -104,10 +105,7 @@ try {
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records (View Only)</a>
         <?php endif; ?>
         <?php if ($canReports): ?>
-        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
-        <?php endif; ?>
-        <?php if ($canHeatMap): ?>
-        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php require __DIR__ . '/partials/topnav-reports.php'; ?>
         <?php endif; ?>
       <?php elseif ($isIt): ?>
         <?php
@@ -127,7 +125,7 @@ try {
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records</a>
         <?php endif; ?>
         <?php if ($canItValidation): ?>
-        <a href="<?= BASE_URL ?>/validation-status.php" class="topnav-link <?= ($activePage ?? '') === 'validation' ? 'is-active' : '' ?>">IT Review Queue</a>
+        <a href="<?= BASE_URL ?>/validation-status.php" class="topnav-link <?= ($activePage ?? '') === 'validation' ? 'is-active' : '' ?>">Review Queue</a>
         <?php endif; ?>
         <?php if ($canItPrint): ?>
         <a href="<?= BASE_URL ?>/it/print-queue.php" class="topnav-link <?= in_array(($activePage ?? ''), ['it-print', 'it-print-queue'], true) ? 'is-active' : '' ?>">
@@ -138,17 +136,17 @@ try {
         </a>
         <?php endif; ?>
         <?php if ($canReports): ?>
-        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
-        <?php endif; ?>
-        <?php if ($canHeatMap): ?>
-        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php require __DIR__ . '/partials/topnav-reports.php'; ?>
         <?php endif; ?>
       <?php elseif ($isPharmacy): ?>
         <?php if ($canPharmacyQueue): ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= in_array(($activePage ?? ''), ['dashboard', 'pharmacy'], true) ? 'is-active' : '' ?>">Pharmacy Queue</a>
         <?php endif; ?>
+        <?php if ($canPharmacyDispensedLog): ?>
+        <a href="<?= BASE_URL ?>/pharmacy/dispensed-medicines.php" class="topnav-link <?= ($activePage ?? '') === 'pharmacy-dispensed' ? 'is-active' : '' ?>">Dispensed Medicines</a>
+        <?php endif; ?>
         <?php if ($canReports): ?>
-        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
+        <?php require __DIR__ . '/partials/topnav-reports.php'; ?>
         <?php endif; ?>
       <?php elseif ($isDoctor): ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= ($activePage ?? '') === 'dashboard' ? 'is-active' : '' ?>">Dashboard</a>
@@ -159,10 +157,7 @@ try {
         <a href="<?= BASE_URL ?>/patient-records.php" class="topnav-link <?= ($activePage ?? '') === 'records' ? 'is-active' : '' ?>">Patient Records</a>
         <?php endif; ?>
         <?php if ($canReports): ?>
-        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
-        <?php endif; ?>
-        <?php if ($canHeatMap): ?>
-        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php require __DIR__ . '/partials/topnav-reports.php'; ?>
         <?php endif; ?>
       <?php else: ?>
         <a href="<?= BASE_URL ?>/dashboard.php" class="topnav-link <?= ($activePage ?? '') === 'dashboard' ? 'is-active' : '' ?>">Dashboard</a>
@@ -176,10 +171,7 @@ try {
           <a href="<?= BASE_URL ?>/workflow/queue.php" class="topnav-link <?= ($activePage ?? '') === 'workflow' ? 'is-active' : '' ?>">My Queue</a>
         <?php endif; ?>
         <?php if ($canReports): ?>
-        <a href="<?= BASE_URL ?>/reports.php" class="topnav-link <?= ($activePage ?? '') === 'reports' ? 'is-active' : '' ?>">Reports</a>
-        <?php endif; ?>
-        <?php if ($canHeatMap): ?>
-        <a href="<?= BASE_URL ?>/heat-map.php" class="topnav-link <?= ($activePage ?? '') === 'heat-map' ? 'is-active' : '' ?>">Heat Map</a>
+        <?php require __DIR__ . '/partials/topnav-reports.php'; ?>
         <?php endif; ?>
       <?php endif; ?>
       <?php if ($canAdmin && !$isSystemAdmin): ?>

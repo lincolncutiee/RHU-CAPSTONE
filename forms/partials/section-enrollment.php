@@ -22,7 +22,7 @@ $fl = static function (string $text, string $field) use ($enrollmentRequired): s
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label class="form-label"><?= $fl('Family Serial Number', 'family_serial_number') ?></label>
-                <input type="text" class="form-control" name="family_serial_number" data-field-group="<?= $fg ?>" <?= $dis ?> required>
+                <input type="text" class="form-control" name="family_serial_number" data-field-group="<?= $fg ?>" <?= $dis ?>>
             </div>
             <div class="col-md-4">
                 <label class="form-label"><?= $fl('Facility Code', 'facility_code') ?></label>
@@ -37,11 +37,11 @@ $fl = static function (string $text, string $field) use ($enrollmentRequired): s
         <div class="row g-3">
             <div class="col-md-3">
                 <label class="form-label"><?= $fl('Last Name', 'last_name') ?></label>
-                <input type="text" class="form-control" name="last_name" data-field-group="<?= $fg ?>" <?= $dis ?> required>
+                <input type="text" class="form-control" name="last_name" data-field-group="<?= $fg ?>" <?= $dis ?>>
             </div>
             <div class="col-md-3">
                 <label class="form-label"><?= $fl('First Name', 'first_name') ?></label>
-                <input type="text" class="form-control" name="first_name" data-field-group="<?= $fg ?>" <?= $dis ?> required>
+                <input type="text" class="form-control" name="first_name" data-field-group="<?= $fg ?>" <?= $dis ?>>
             </div>
             <div class="col-md-3">
                 <label class="form-label"><?= $fl('Middle Name', 'middle_name') ?></label>
@@ -60,7 +60,7 @@ $fl = static function (string $text, string $field) use ($enrollmentRequired): s
         <div class="row g-3 mt-1">
             <div class="col-md-2">
                 <label class="form-label"><?= $fl('Sex', 'sex') ?></label>
-                <select class="form-select" name="sex" data-field-group="<?= $fg ?>" <?= $dis ?> required>
+                <select class="form-select" name="sex" data-field-group="<?= $fg ?>" <?= $dis ?>>
                     <option value="">Select</option>
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
@@ -68,7 +68,7 @@ $fl = static function (string $text, string $field) use ($enrollmentRequired): s
             </div>
             <div class="col-md-2">
                 <label class="form-label"><?= $fl('Birth Date', 'birth_date') ?></label>
-                <input type="date" class="form-control" name="birth_date" data-field-group="<?= $fg ?>" <?= $dis ?> required>
+                <input type="date" class="form-control" name="birth_date" data-field-group="<?= $fg ?>" <?= $dis ?>>
             </div>
             <div class="col-md-3">
                 <label class="form-label"><?= $fl('Birthplace', 'birthplace') ?></label>
@@ -100,7 +100,7 @@ $fl = static function (string $text, string $field) use ($enrollmentRequired): s
             </div>
             <div class="col-md-3">
                 <label class="form-label"><?= $fl('Contact Number', 'contact_number') ?></label>
-                <input type="text" class="form-control" name="contact_number" data-field-group="<?= $fg ?>" <?= $dis ?> required>
+                <input type="text" class="form-control" name="contact_number" data-field-group="<?= $fg ?>" <?= $dis ?>>
             </div>
         </div>
 

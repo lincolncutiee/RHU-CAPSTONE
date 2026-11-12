@@ -48,7 +48,7 @@ class ItDashboard
         $firstPending = self::firstActionableRow(array_merge($queueToday, $queueBacklog));
 
         $primaryAction = [
-            'label' => $firstPending ? 'Open Next in Queue' : 'Open IT Review Queue',
+            'label' => $firstPending ? 'Open Next in Queue' : 'Open Review Queue',
             'url'   => $firstPending['primary_url'] ?? (BASE_URL . '/validation-status.php'),
             'icon'  => $firstPending ? 'bi-play-fill' : 'bi-shield-check',
         ];
@@ -221,7 +221,7 @@ class ItDashboard
         $isReady = $status === WORKFLOW_READY_FOR_PRINT;
 
         if ($isPending) {
-            $badgeLabel = 'Pending IT Validation';
+            $badgeLabel = 'Pending Validation';
             $badgeClass = 'pending';
             $action = 'review';
         } elseif ($isReturned) {

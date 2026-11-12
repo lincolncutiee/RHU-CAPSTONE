@@ -21,6 +21,7 @@ $patientId = (int) ($_POST['patient_id'] ?? 0);
 $consultationId = (int) ($_POST['consultation_id'] ?? 0);
 $user['_rejection_reason'] = trim((string) ($_POST['rejection_reason'] ?? ''));
 $user['_consultation_id'] = $consultationId;
+$user['_return_to_user_id'] = (int) ($_POST['return_to_user_id'] ?? 0);
 
 if ($patientId <= 0 || $action === '') {
     http_response_code(400);
@@ -56,9 +57,19 @@ try {
         }
 
         if (!ClinicalMaster::hasConsultationMedications($conn, $consultationId)) {
-            throw new RuntimeException(
-                'Missing medications. Save at least one prescription from the medication master list before sending to Pharmacy.'
+            $stmtMed = $conn->prepare(
+                'SELECT medication_treatment FROM treatment_records WHERE id = ? AND patient_id = ? LIMIT 1'
             );
+            $stmtMed->bind_param('ii', $consultationId, $patientId);
+            $stmtMed->execute();
+            $medRow = $stmtMed->get_result()->fetch_assoc();
+            $stmtMed->close();
+            $legacyMedText = trim((string) ($medRow['medication_treatment'] ?? ''));
+            if ($legacyMedText === '') {
+                throw new RuntimeException(
+                    'Missing medications. Add at least one prescription before sending to Pharmacy.'
+                );
+            }
         }
     }
 

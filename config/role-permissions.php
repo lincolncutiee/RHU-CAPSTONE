@@ -35,6 +35,7 @@ $pharmacy = [
         'pharmacy.queue'              => 'Access pharmacy queue',
         'pharmacy.dispense'           => 'Record dispensing',
         'pharmacy.view_prescription'  => 'View prescription details',
+        'pharmacy.dispensed_log'      => 'View dispensed medicines log',
     ],
 ];
 
@@ -142,7 +143,10 @@ return [
         ],
         ROLE_PHARMACY => [
             'patient.view' => 1,
-            'pharmacy.queue' => 1, 'pharmacy.dispense' => 1, 'pharmacy.view_prescription' => 1,
+            'pharmacy.queue' => 1,
+            'pharmacy.dispense' => 1,
+            'pharmacy.view_prescription' => 1,
+            'pharmacy.dispensed_log' => 1,
             'workflow.view_queue' => 1, 'workflow.advance' => 1,
         ],
         ROLE_IT => [

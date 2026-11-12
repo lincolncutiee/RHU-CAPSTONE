@@ -40,7 +40,7 @@ $p = 'enrollment';
         <tr>
             <td style="width:55%;">
                 <?= $P::label('Last Name (Apelyido)', 'last_name') ?>
-                <?= $P::line('last_name', $role, $fg, $lockRecords, false, 'text', '', '', true) ?>
+                <?= $P::line('last_name', $role, $fg, $lockRecords) ?>
             </td>
             <td style="width:20%;">
                 <?= $P::label('Suffix (e.g., Sr., Jr. III)', 'suffix', false) ?>
@@ -54,7 +54,7 @@ $p = 'enrollment';
         <tr>
             <td colspan="2">
                 <?= $P::label('First Name (Pangalan)', 'first_name') ?>
-                <?= $P::line('first_name', $role, $fg, $lockRecords, false, 'text', '', '', true) ?>
+                <?= $P::line('first_name', $role, $fg, $lockRecords) ?>
             </td>
         </tr>
         <tr>
@@ -77,7 +77,7 @@ $p = 'enrollment';
         <tr>
             <td>
                 <?= $P::label('Birth Date (Kaarawan) (mm/dd/yyyy)', 'birth_date') ?>
-                <?= $P::line('birth_date', $role, $fg, $lockRecords, false, 'date', '', '', true) ?>
+                <?= $P::line('birth_date', $role, $fg, $lockRecords, false, 'date') ?>
             </td>
             <td colspan="2" rowspan="3" style="vertical-align:top;">
                 <?= $P::label('Residential Address (Tirahan)', 'address_barangay', false) ?>

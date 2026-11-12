@@ -1,7 +1,9 @@
 /* Pharmacy module — spacious dashboard queue */
 
 .page-content:has(.ph-dashboard),
-.main-content:has(.ph-dashboard) {
+.main-content:has(.ph-dashboard),
+.page-content:has(.ph-dispensed-log),
+.main-content:has(.ph-dispensed-log) {
     background: #f1f5f9;
 }
 
@@ -122,6 +124,20 @@
     background: #f0fdf4;
     border-color: #86efac;
     color: #15803d;
+}
+
+a.ph-stat-pill {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.ph-stat-pill:hover,
+a.ph-stat-pill:focus-visible {
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+a.ph-stat-pill.is-active {
+    box-shadow: inset 0 0 0 2px currentColor;
 }
 
 .ph-title {
@@ -570,4 +586,107 @@
     .ph-header-stats { width: 100%; justify-content: flex-start; }
     .ph-action-label { display: none; }
     .ph-action-btn { padding: 0.4rem 0.55rem; }
+}
+
+/* Dispensed medicines log */
+.ph-dispensed-log {
+    max-width: 1320px;
+}
+
+.ph-header-icon--log {
+    background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%);
+    color: #15803d;
+    border-color: #86efac;
+}
+
+.ph-toolbar--log {
+    grid-template-columns: minmax(260px, 1.5fr) minmax(160px, 0.65fr) auto auto;
+}
+
+.ph-apply {
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0 1.15rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    white-space: nowrap;
+}
+
+.ph-log-table {
+    min-width: 900px;
+}
+
+.ph-med-line {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    max-width: 16rem;
+}
+
+.ph-med-line > i {
+    color: #1a6fc4;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+}
+
+.ph-med-generic {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.ph-form-tag {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+}
+
+.ph-qty-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 1.85rem;
+    padding: 0 0.5rem;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    color: #1e40af;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+
+.ph-dose-missing {
+    font-size: 0.8125rem;
+    font-style: italic;
+    color: #94a3b8;
+}
+
+.ph-action-btn--view {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+}
+
+@media (max-width: 991.98px) {
+    .ph-toolbar--log {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ph-toolbar--log .ph-search {
+        grid-column: 1 / -1;
+    }
+
+    .ph-toolbar--log .ph-apply,
+    .ph-toolbar--log .ph-reset {
+        width: 100%;
+    }
 }

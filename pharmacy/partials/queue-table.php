@@ -13,15 +13,12 @@ $queueCount = count($queue);
 
 $statWaiting = 0;
 $statDispensing = 0;
-$statDispensed = 0;
 foreach ($queue as $qRow) {
     $tone = $qRow['status_tone'] ?? '';
     if ($tone === 'waiting') {
         $statWaiting++;
     } elseif ($tone === 'dispensing') {
         $statDispensing++;
-    } elseif ($tone === 'dispensed') {
-        $statDispensed++;
     }
 }
 
@@ -43,7 +40,7 @@ $patientInitials = static function (string $formalName): string {
             <span class="ph-header-icon" aria-hidden="true"><i class="bi bi-capsule"></i></span>
             <div>
                 <h1 class="ph-title">Pharmacy Queue</h1>
-                <p class="ph-subtitle">Patients sent by the doctor for medicine dispensing</p>
+                <p class="ph-subtitle">Patients waiting for the pharmacist</p>
             </div>
         </div>
         <div class="ph-header-stats">
@@ -55,12 +52,11 @@ $patientInitials = static function (string $formalName): string {
             <span class="ph-stat-pill ph-stat-pill--waiting" title="Waiting for pharmacy">
                 <i class="bi bi-hourglass-split" aria-hidden="true"></i> <?= (int) $statWaiting ?>
             </span>
+            <?php if ($statDispensing > 0): ?>
             <span class="ph-stat-pill ph-stat-pill--dispensing" title="Dispensing">
                 <i class="bi bi-box-seam" aria-hidden="true"></i> <?= (int) $statDispensing ?>
             </span>
-            <span class="ph-stat-pill ph-stat-pill--dispensed" title="Dispensed">
-                <i class="bi bi-check2-circle" aria-hidden="true"></i> <?= (int) $statDispensed ?>
-            </span>
+            <?php endif; ?>
             <?php endif; ?>
         </div>
     </header>
@@ -85,10 +81,9 @@ $patientInitials = static function (string $formalName): string {
         <label class="ph-filter">
             <span>Status</span>
             <select name="status" id="phStatusFilter" aria-label="Filter by prescription status">
-                <option value="">All Statuses</option>
+                <option value="">Waiting for pharmacist</option>
                 <option value="<?= htmlspecialchars(WORKFLOW_WAITING_FOR_PHARMACY) ?>" <?= $statusFilter === WORKFLOW_WAITING_FOR_PHARMACY ? 'selected' : '' ?>>Waiting for Pharmacy</option>
                 <option value="<?= htmlspecialchars(WORKFLOW_DISPENSING) ?>" <?= $statusFilter === WORKFLOW_DISPENSING ? 'selected' : '' ?>>Dispensing</option>
-                <option value="<?= htmlspecialchars(WORKFLOW_DISPENSED) ?>" <?= $statusFilter === WORKFLOW_DISPENSED ? 'selected' : '' ?>>Dispensed</option>
             </select>
         </label>
 
@@ -97,8 +92,6 @@ $patientInitials = static function (string $formalName): string {
             <select name="sort" id="phSortFilter" aria-label="Sort pharmacy queue">
                 <option value="newest" <?= $sortBy === 'newest' ? 'selected' : '' ?>>Newest First</option>
                 <option value="oldest" <?= $sortBy === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
-                <option value="status" <?= $sortBy === 'status' ? 'selected' : '' ?>>By Status</option>
-                <option value="name" <?= $sortBy === 'name' ? 'selected' : '' ?>>Patient Name</option>
             </select>
         </label>
 

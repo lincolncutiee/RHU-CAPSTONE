@@ -56,12 +56,11 @@ class Pharmacy
         return [
             WORKFLOW_WAITING_FOR_PHARMACY,
             WORKFLOW_DISPENSING,
-            WORKFLOW_DISPENSED,
         ];
     }
 
     /**
-     * Patients sent by the doctor (Waiting / Dispensing / Dispensed).
+     * Patients still with the pharmacist (Waiting for Pharmacy / Dispensing).
      *
      * @param array{status?:string,search?:string,sort?:string}|string|null $filters
      * @return list<array<string, mixed>>
@@ -83,6 +82,8 @@ class Pharmacy
         $statuses = self::queueStatuses();
         if ($statusFilter !== '' && in_array($statusFilter, $statuses, true)) {
             $statuses = [$statusFilter];
+        } else {
+            $statuses = [WORKFLOW_WAITING_FOR_PHARMACY];
         }
 
         $placeholders = implode(',', array_fill(0, count($statuses), '?'));
@@ -131,8 +132,6 @@ class Pharmacy
 
         $orderSql = match ($sort) {
             'oldest' => "COALESCE(tr.date_of_consultation, DATE(tr.created_at)) ASC, tr.id ASC",
-            'name' => "p.last_name ASC, p.first_name ASC",
-            'status' => "FIELD(p.status, 'Waiting for Pharmacy', 'Dispensing', 'Dispensed'), COALESCE(tr.date_of_consultation, DATE(tr.created_at)) DESC",
             default => "COALESCE(tr.date_of_consultation, DATE(tr.created_at)) DESC, tr.id DESC",
         };
         $sql .= " ORDER BY {$orderSql}";
@@ -347,5 +346,114 @@ class Pharmacy
         $stmt->bind_param('sii', $json, $consultationId, $patientId);
         $stmt->execute();
         $stmt->close();
+    }
+
+    /**
+     * Flat log rows — one row per prescribed medicine on dispensed consultations.
+     *
+     * @param array{mine_only?:bool,pharmacist_id?:int,search?:string,date_from?:string,date_to?:string} $filters
+     * @return list<array<string, mixed>>
+     */
+    public static function listDispensedMedicationLog(mysqli $conn, array $filters = []): array
+    {
+        self::ensureSchema($conn);
+
+        $mineOnly = !empty($filters['mine_only']);
+        $pharmacistId = (int) ($filters['pharmacist_id'] ?? 0);
+        $search = trim((string) ($filters['search'] ?? ''));
+
+        $sql = "SELECT tr.id AS consultation_id,
+                       tr.patient_id AS patient_db_id,
+                       tr.date_of_consultation,
+                       tr.it_data,
+                       p.patient_id AS pin,
+                       p.first_name,
+                       p.middle_name,
+                       p.last_name,
+                       mm.generic_name,
+                       mm.brand_name,
+                       mm.strength,
+                       mm.dosage_form,
+                       cm.id AS line_id
+                FROM consultation_medications cm
+                INNER JOIN treatment_records tr ON tr.id = cm.consultation_id
+                INNER JOIN patients p ON p.id = tr.patient_id
+                INNER JOIN medication_master mm ON mm.id = cm.medication_id
+                WHERE p.is_archived = 0";
+
+        $types = '';
+        $params = [];
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $sql .= ' AND (
+                p.patient_id LIKE ?
+                OR p.first_name LIKE ?
+                OR p.last_name LIKE ?
+                OR mm.generic_name LIKE ?
+                OR mm.brand_name LIKE ?
+            )';
+            $types .= 'sssss';
+            array_push($params, $like, $like, $like, $like, $like);
+        }
+
+        $sql .= ' ORDER BY tr.id DESC, cm.id ASC LIMIT 800';
+
+        $stmt = $conn->prepare($sql);
+        if ($types !== '') {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $raw = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+        $stmt->close();
+
+        $rows = [];
+        foreach ($raw as $row) {
+            $pharmacy = self::parsePharmacyMeta($row['it_data'] ?? null);
+            $dispensedAt = trim((string) ($pharmacy['dispensed_at'] ?? ''));
+            if ($dispensedAt === '') {
+                continue;
+            }
+
+            $dispensedBy = (int) ($pharmacy['dispensed_by'] ?? 0);
+            if ($mineOnly && $pharmacistId > 0 && $dispensedBy !== $pharmacistId) {
+                continue;
+            }
+
+            $ts = strtotime($dispensedAt);
+            $dispensedDisplay = $ts ? date('M d, Y g:i A', $ts) : $dispensedAt;
+            $sortTs = $ts ?: 0;
+
+            $middle = trim((string) ($row['middle_name'] ?? ''));
+            $formal = trim(($row['last_name'] ?? '') . ', ' . ($row['first_name'] ?? ''))
+                . ($middle !== '' ? ' ' . $middle : '');
+
+            $dose = trim((string) ($row['strength'] ?? ''));
+            if ($dose === '') {
+                $dose = '—';
+            }
+
+            $rows[] = [
+                'consultation_id'   => (int) $row['consultation_id'],
+                'patient_db_id'     => (int) $row['patient_db_id'],
+                'pin'               => $row['pin'] ?? '—',
+                'patient_name'      => $formal !== ',' ? $formal : '—',
+                'medicine'          => trim((string) ($row['generic_name'] ?? '')),
+                'brand'             => trim((string) ($row['brand_name'] ?? '')),
+                'dose'              => $dose,
+                'form'              => trim((string) ($row['dosage_form'] ?? '')) ?: '—',
+                'quantity'          => '1',
+                'quantity_note'     => 'Per prescription line',
+                'dispensed_at'      => $dispensedDisplay,
+                'dispensed_sort_ts' => $sortTs,
+                'dispensed_by'      => trim((string) ($pharmacy['dispensed_by_name'] ?? '')) ?: '—',
+                'view_url'          => BASE_URL . '/pharmacy/dispense.php?id=' . (int) $row['patient_db_id']
+                    . '&consultation_id=' . (int) $row['consultation_id'],
+            ];
+        }
+
+        usort($rows, static fn($a, $b) => ($b['dispensed_sort_ts'] ?? 0) <=> ($a['dispensed_sort_ts'] ?? 0));
+
+        return $rows;
     }
 }

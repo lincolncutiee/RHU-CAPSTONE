@@ -190,7 +190,7 @@ class FormRenderer
         $name = $field['name'];
         $isExtended = !empty($field['extended']);
         $inputName = $isExtended ? "extended[{$name}]" : $name;
-        $req = !empty($field['required']) && !$ro ? 'required' : '';
+        $req = '';
         $fgAttr = 'data-field-group="' . htmlspecialchars($fg) . '"';
         $extAttr = $isExtended ? ' data-extended="1"' : '';
 
@@ -199,11 +199,6 @@ class FormRenderer
         <div class="col-md-<?= (int) $col ?>">
             <label class="form-label">
                 <?= htmlspecialchars(FormTemplate::fieldLabel((string) ($field['label'] ?? ''), $name, self::$renderPageId ?: null)) ?>
-                <?php if (!empty($field['required'])): ?>
-                    <span class="text-danger">*</span>
-                <?php else: ?>
-                    <span class="text-muted fw-normal">(optional)</span>
-                <?php endif; ?>
             </label>
             <?php if ($type === 'textarea'): ?>
                 <textarea name="<?= htmlspecialchars($inputName) ?>" rows="<?= (int) ($field['rows'] ?? 3) ?>"
@@ -244,11 +239,6 @@ class FormRenderer
         <div class="col-md-<?= (int) $col ?>">
             <label class="form-label">
                 <?= htmlspecialchars($field['label']) ?>
-                <?php if (!empty($field['required'])): ?>
-                    <span class="text-danger">*</span>
-                <?php else: ?>
-                    <span class="text-muted fw-normal">(optional)</span>
-                <?php endif; ?>
             </label>
             <div class="checkbox-grid">
                 <?php foreach ($field['options'] as $opt): ?>

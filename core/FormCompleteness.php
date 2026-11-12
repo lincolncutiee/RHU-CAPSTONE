@@ -25,64 +25,83 @@ class FormCompleteness
     ];
 
     /**
-     * @return array{complete: bool, issues: list<array{form: string, fields: list<string>}>}
+     * @return array{complete: bool, issues: list<array{form: string, form_key: string, fields: list<string>, items: list<array{label: string, key: string, extended: bool}>}>}
      */
-    public static function validate(array $patient, array $treatment = [], array $extended = [], string $viewerRole = ''): array
-    {
+    public static function validate(
+        array $patient,
+        array $treatment = [],
+        array $extended = [],
+        string $viewerRole = '',
+        string $scope = 'submit'
+    ): array {
         $rules = require __DIR__ . '/../config/form-completeness.php';
         $issues = [];
         $viewerRole = Permissions::normalizeRole($viewerRole);
+        $forDisplay = $scope === 'display';
 
         foreach ($rules as $formKey => $rule) {
             $owner = (string) ($rule['owner'] ?? '');
-            // PCSF is completed by IT — skip for everyone in shared completeness UI
-            if ($owner === 'it') {
-                continue;
-            }
-            // EKAS / EPRESS are doctor-owned — Records must not be blocked before consultation
-            if ($owner === 'doctor' && $viewerRole === ROLE_RECORDS) {
-                continue;
+            // Display: show all missing fields so every role sees gaps (editing still gated by permissions).
+            // Submit/workflow: role-scoped — Records not blocked by IT/doctor sections until their turn.
+            if (!$forDisplay) {
+                if ($owner === 'it' && $viewerRole !== ROLE_IT) {
+                    continue;
+                }
+                if ($owner === 'doctor' && $viewerRole === ROLE_RECORDS) {
+                    continue;
+                }
             }
 
             if (!empty($rule['conditional']) && !self::epressRequired($treatment)) {
                 continue;
             }
 
-            $missing = [];
+            $items = [];
 
             foreach ($rule['patient'] ?? [] as $field) {
                 if (!self::hasValue($patient[$field] ?? null)) {
-                    $missing[] = self::humanLabel($field);
+                    self::pushNavItem($items, self::humanLabel($field), $field, false);
                 }
             }
 
             foreach ($rule['patient_consent'] ?? [] as $field) {
                 if (!self::hasValue($patient[$field] ?? null)) {
-                    $missing[] = self::humanLabel($field);
+                    self::pushNavItem($items, self::humanLabel($field), $field, false);
                 }
             }
 
             foreach ($rule['treatment'] ?? [] as $field) {
                 if (!self::hasValue($treatment[$field] ?? null)) {
-                    $missing[] = self::humanLabel($field);
+                    self::pushNavItem($items, self::humanLabel($field), $field, false);
                 }
             }
 
             foreach ($rule['extended'] ?? [] as $field) {
                 if (!self::hasValue($extended[$field] ?? null)) {
-                    $missing[] = self::humanLabel($field);
+                    self::pushNavItem($items, self::humanLabel($field), $field, true);
                 }
             }
 
             foreach ($rule['custom'] ?? [] as $custom) {
-                $customMissing = self::validateCustom($custom, $patient, $treatment, $extended);
-                $missing = array_merge($missing, $customMissing);
+                foreach (self::validateCustom($custom, $patient, $treatment, $extended) as $label) {
+                    self::pushNavItem(
+                        $items,
+                        $label,
+                        self::customNavKey($custom, $label),
+                        self::customFieldExtended($custom)
+                    );
+                }
             }
 
-            if (!empty($missing)) {
+            $items = self::uniqueNavItems($items);
+
+            if (!empty($items)) {
                 $issues[] = [
-                    'form'   => $rule['label'],
-                    'fields' => array_values(array_unique($missing)),
+                    'form'     => $rule['label'],
+                    'form_key' => $formKey,
+                    'owner'    => $owner !== '' ? $owner : ROLE_RECORDS,
+                    'fields'   => array_column($items, 'label'),
+                    'items'    => $items,
                 ];
             }
         }
@@ -91,6 +110,72 @@ class FormCompleteness
             'complete' => empty($issues),
             'issues'   => $issues,
         ];
+    }
+
+    /**
+     * @param list<array{label: string, key: string, extended: bool}> $items
+     */
+    private static function pushNavItem(array &$items, string $label, string $key, bool $extended): void
+    {
+        $items[] = [
+            'label'    => $label,
+            'key'      => $key,
+            'extended' => $extended,
+        ];
+    }
+
+    /**
+     * @param list<array{label: string, key: string, extended: bool}> $items
+     * @return list<array{label: string, key: string, extended: bool}>
+     */
+    private static function uniqueNavItems(array $items): array
+    {
+        $seen = [];
+        $out = [];
+        foreach ($items as $item) {
+            $sig = ($item['key'] ?? '') . '|' . ($item['label'] ?? '');
+            if (isset($seen[$sig])) {
+                continue;
+            }
+            $seen[$sig] = true;
+            $out[] = $item;
+        }
+
+        return $out;
+    }
+
+    private static function customNavKey(string $rule, string $label): string
+    {
+        return match ($rule) {
+            'philhealth_format'      => 'philhealth_no',
+            'family_serial_format'   => 'family_serial_number',
+            'consultation_types'     => 'consultation_types[]',
+            'pmh_completed'          => '__custom:pmh_completed',
+            'psh_surgical_completed' => '__custom:psh_surgical_completed',
+            'fh_completed'           => '__custom:fh_completed',
+            'epress_if_applicable'   => self::epressNavKey($label),
+            default                  => '__custom:' . $rule,
+        };
+    }
+
+    private static function epressNavKey(string $label): string
+    {
+        if (stripos($label, 'Diagnosis') !== false) {
+            return 'diagnosis';
+        }
+        if (stripos($label, 'Medication') !== false) {
+            return 'medication_treatment';
+        }
+        if (stripos($label, 'Provider') !== false) {
+            return 'healthcare_provider';
+        }
+
+        return '__custom:epress_if_applicable';
+    }
+
+    private static function customFieldExtended(string $rule): bool
+    {
+        return in_array($rule, ['pmh_completed', 'psh_surgical_completed', 'fh_completed'], true);
     }
 
     public static function formatIssuesMessage(array $issues): string
@@ -110,7 +195,12 @@ class FormCompleteness
     /**
      * @return array{complete: bool, issues: list<array{form: string, fields: list<string>}>}
      */
-    public static function validatePatientId(mysqli $conn, int $patientDbId, string $viewerRole = ''): array
+    public static function validatePatientId(
+        mysqli $conn,
+        int $patientDbId,
+        string $viewerRole = '',
+        string $scope = 'submit'
+    ): array
     {
         $stmt = $conn->prepare('SELECT * FROM patients WHERE id = ?');
         $stmt->bind_param('i', $patientDbId);
@@ -141,7 +231,7 @@ class FormCompleteness
             $patient['residential_address'] ?? null
         );
 
-        return self::validate($patient, $treatment, $extended, $viewerRole);
+        return self::validate($patient, $treatment, $extended, $viewerRole, $scope);
     }
 
     private static function validateCustom(

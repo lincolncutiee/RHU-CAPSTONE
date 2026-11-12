@@ -35,6 +35,17 @@ class Auth
         $stmt->close();
 
         if (!$user || !$user['is_active'] || !password_verify($password, $user['password_hash'])) {
+            require_once __DIR__ . '/AccessLog.php';
+            $reason = !$user ? 'unknown_username' : (!$user['is_active'] ? 'inactive' : 'wrong_password');
+            AccessLog::write(
+                $conn,
+                'failed',
+                $user ? (int) $user['id'] : null,
+                $username,
+                $user['role_slug'] ?? null,
+                $user['role_name'] ?? null,
+                $reason
+            );
             $conn->close();
             return false;
         }
@@ -55,6 +66,19 @@ class Auth
         Session::set('field_privileges', $privileges);
         Session::set('role_permissions', $rolePerms);
         Session::set('rhu_session_hydrated', true);
+
+        require_once __DIR__ . '/AccessLog.php';
+        $logConn = getDBConnection();
+        AccessLog::write(
+            $logConn,
+            'login',
+            (int) $user['id'],
+            (string) $user['username'],
+            $roleSlug,
+            (string) ($user['role_name'] ?? ''),
+            null
+        );
+        $logConn->close();
 
         return true;
     }
@@ -87,6 +111,20 @@ class Auth
 
     public static function logout(): void
     {
+        if (self::check()) {
+            require_once __DIR__ . '/AccessLog.php';
+            $conn = getDBConnection();
+            AccessLog::write(
+                $conn,
+                'logout',
+                (int) Session::get('user_id'),
+                (string) Session::get('username'),
+                (string) Session::get('role'),
+                (string) Session::get('role_name'),
+                null
+            );
+            $conn->close();
+        }
         Session::destroy();
     }
 

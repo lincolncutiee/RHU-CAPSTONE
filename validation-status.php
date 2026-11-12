@@ -10,7 +10,7 @@ require_once __DIR__ . '/core/PatientSearch.php';
 
 requireRole([ROLE_IT]);
 
-$pageTitle         = 'IT Review Queue';
+$pageTitle         = 'Review Queue';
 $pageSubtitle      = '';
 $activePage        = 'validation';
 $hidePageTitleBar  = true;
@@ -110,7 +110,7 @@ foreach ($records as $r) {
     $isPrinted = $status === WORKFLOW_PRINTED;
 
     if ($isPending) {
-        $badgeLabel = 'Pending IT Validation';
+        $badgeLabel = 'Pending Validation';
         $badgeClass = 'pending';
         $action = 'review';
     } elseif ($isReturned) {
@@ -198,7 +198,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <select id="itqStatus" aria-label="Status">
             <option value="">Status</option>
-            <option value="pending">Pending IT Validation</option>
+            <option value="pending">Pending Validation</option>
             <option value="approved">Approved</option>
             <option value="returned">Returned</option>
             <option value="printed">Printed</option>

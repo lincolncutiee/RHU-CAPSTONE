@@ -216,12 +216,7 @@ class PaperFormRenderer
 
     public static function isFieldRequired(string $fieldName, bool $extended = false): bool
     {
-        if ($fieldName === '' || self::$currentPageId === '') {
-            return false;
-        }
-
-        $map = self::requiredByPage()[self::$currentPageId] ?? [];
-        return !empty($map[$fieldName]);
+        return false;
     }
 
     /**
@@ -338,16 +333,12 @@ class PaperFormRenderer
             return '<span class="pf-req" aria-hidden="true">*</span>';
         }
 
-        return '<span class="pf-opt">(optional)</span>';
+        return '';
     }
 
     private static function resolveRequiredFlag(string $name, bool $extended, bool $required): bool
     {
-        if ($required) {
-            return true;
-        }
-
-        return self::isFieldRequired($name, $extended);
+        return false;
     }
 
     /**

@@ -162,14 +162,15 @@ class ReportAnalyticsSummary
 
         $first = $rows[0];
         $name = (string) ($first['disease'] ?? '');
-        $recent = (int) ($first['recent_14'] ?? 0);
-        $trend = (string) ($first['trend_label'] ?? '');
-        $proj = (int) ($first['projected_mid'] ?? 0);
-        $horizon = (int) ($forecast['horizon_days'] ?? 14);
+        $recent = (int) ($first['recent_7'] ?? $first['recent_14'] ?? 0);
+        $trend = (string) ($first['alert_label'] ?? $first['trend_label'] ?? '');
+        $proj = $first['projected_mid'];
+        $projText = $proj === null ? 'not estimated (insufficient data)' : ('~' . (int) $proj);
+        $horizon = (int) ($forecast['horizon_days'] ?? 7);
 
-        return "The Case forecast block compares the last 14 days vs the previous 14 days and projects the next {$horizon} days. "
-            . "Top listed disease: {$name} — last 14d: {$recent}, trend: {$trend}, projected total ~{$proj}. "
-            . (string) ($forecast['disclaimer'] ?? '');
+        return "The Case forecast block compares the last 7 days vs the previous 7 days and projects the next {$horizon} days. "
+            . "Highest projected change: {$name} — last 7d: {$recent}, trend: {$trend}, projected total {$projText}. "
+            . (string) ($forecast['disclaimer'] ?? ReportForecast::DISCLAIMER);
     }
 
     /** @param array<string, mixed> $report */

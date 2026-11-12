@@ -3,6 +3,7 @@ require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/core/Permissions.php';
 require_once __DIR__ . '/core/Reports.php';
 require_once __DIR__ . '/core/ReportFilters.php';
+require_once __DIR__ . '/core/ReportForecast.php';
 require_once __DIR__ . '/core/FormTemplate.php';
 require_once __DIR__ . '/core/ReceptionQueue.php';
 
@@ -17,14 +18,60 @@ $filters = ReportFilters::fromRequest(
     isset($_GET['age_group']) ? (string) $_GET['age_group'] : null,
 );
 
+$reportView = (($_GET['view'] ?? '') === 'forecast') ? 'forecast' : 'analytics';
+$forecastDays = ReportForecast::normalizeHorizon((int) ($_GET['forecast_days'] ?? 7));
+$forecastInterval = ReportForecast::normalizeInterval((string) ($_GET['interval'] ?? 'weekly'));
+$forecastViewMode = ReportForecast::normalizeViewMode((string) ($_GET['mode'] ?? 'chart'));
+$forecastDisease = trim((string) ($_GET['disease'] ?? 'all'));
+
 $conn = getDBConnection();
-$report = Reports::build($conn, $fromInput, $toInput, $filters);
+$report = Reports::build($conn, $fromInput, $toInput, $filters, $forecastDays);
+$forecastDash = null;
+if ($reportView === 'forecast') {
+    $anchorTo = $report['range']['to'] ?? ReceptionQueue::today();
+    $forecastDash = ReportForecast::dashboard(
+        $conn,
+        $anchorTo,
+        $filters,
+        $forecastDays,
+        $forecastInterval,
+        $forecastDisease,
+        $forecastViewMode
+    );
+    $forecastDisease = (string) ($forecastDash['disease'] ?? 'all');
+}
 $conn->close();
 
 $filterSex = (string) ($report['filters']['sex'] ?? '');
 $filterAge = (string) ($report['filters']['age_group'] ?? '');
-$filterQuery = static function (array $extra = []) use ($filterSex, $filterAge): string {
-    $q = array_merge(['sex' => $filterSex, 'age_group' => $filterAge], $extra);
+$filterQuery = static function (array $extra = []) use (
+    $filterSex,
+    $filterAge,
+    $forecastDays,
+    $reportView,
+    $forecastInterval,
+    $forecastViewMode,
+    $forecastDisease
+): string {
+    $q = array_merge([
+        'sex' => $filterSex,
+        'age_group' => $filterAge,
+        'forecast_days' => (string) $forecastDays,
+    ], $extra);
+    if ($reportView === 'forecast' && !array_key_exists('view', $extra)) {
+        $q['view'] = 'forecast';
+        $q['interval'] = $extra['interval'] ?? $forecastInterval;
+        $q['mode'] = $extra['mode'] ?? $forecastViewMode;
+        $q['disease'] = $extra['disease'] ?? $forecastDisease;
+    } elseif (($extra['view'] ?? null) === 'forecast') {
+        $q['view'] = 'forecast';
+        $q['interval'] = $extra['interval'] ?? $forecastInterval;
+        $q['mode'] = $extra['mode'] ?? $forecastViewMode;
+        $q['disease'] = $extra['disease'] ?? $forecastDisease;
+    }
+    if (($q['view'] ?? '') === 'analytics') {
+        unset($q['view'], $q['interval'], $q['mode'], $q['disease']);
+    }
     return http_build_query(array_filter($q, static fn ($v) => $v !== '' && $v !== null));
 };
 $forecast = $report['case_forecast'] ?? ['rows' => []];
@@ -34,9 +81,9 @@ $branding = FormTemplate::branding();
 $siteTitle = $branding['site_title'] ?? 'RHU Magallanes';
 $logoUrl = FormTemplate::logoUrl();
 
-$pageTitle = 'Reports';
+$pageTitle = $reportView === 'forecast' ? 'Case Forecast' : 'Reports';
 $pageSubtitle = '';
-$activePage = 'reports';
+$activePage = $reportView === 'forecast' ? 'forecast' : 'reports';
 $hidePageTitleBar = true;
 $hidePatientSearch = true;
 
@@ -71,6 +118,11 @@ foreach ($presets as $p) {
     }
 }
 $activeFilterLabels = $report['filters']['labels'] ?? [];
+$fcSummary = $forecastDash['summary'] ?? [];
+$fcChart = $forecastDash['chart'] ?? [];
+$fcWarnings = $forecastDash['early_warnings'] ?? [];
+$fcDiseaseOptions = $forecastDash['disease_options'] ?? [];
+$fcTableRows = $forecastDash['table_rows'] ?? [];
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -79,21 +131,68 @@ require_once __DIR__ . '/includes/header.php';
     <div class="rpt-screen">
         <header class="rpt-header no-print">
             <div class="rpt-header__text">
-                <p class="rpt-kicker"><i class="bi bi-bar-chart-line"></i> Management reports</p>
-                <h1 class="rpt-title">Analytics</h1>
+                <?php if ($reportView === 'forecast'): ?>
+                    <p class="rpt-kicker"><i class="bi bi-graph-up-arrow"></i> Case forecast</p>
+                    <h1 class="rpt-title">Case Forecast</h1>
+                <?php else: ?>
+                    <p class="rpt-kicker"><i class="bi bi-bar-chart-line"></i> Management reports</p>
+                    <h1 class="rpt-title">Analytics</h1>
+                <?php endif; ?>
             </div>
             <div class="rpt-header__actions">
                 <span class="rpt-period-pill"><i class="bi bi-calendar3"></i> <?= htmlspecialchars($range['from_label']) ?> – <?= htmlspecialchars($range['to_label']) ?></span>
                 <?php if ($activeFilterLabels !== []): ?>
                     <span class="rpt-period-pill rpt-period-pill--filter"><i class="bi bi-funnel"></i> <?= htmlspecialchars(implode(' · ', $activeFilterLabels)) ?></span>
                 <?php endif; ?>
+                <?php if ($reportView !== 'forecast'): ?>
                 <button type="button" class="btn btn-primary btn-sm rpt-print-btn" id="rptPrintBtn">
                     <i class="bi bi-printer"></i> Print summary
                 </button>
+                <?php endif; ?>
             </div>
         </header>
 
         <div class="rpt-toolbar no-print">
+            <?php if ($reportView === 'forecast'): ?>
+            <form class="rpt-filters rpt-filters--forecast" method="get" action="<?= BASE_URL ?>/reports.php" id="rptForecastFilterForm">
+                <input type="hidden" name="view" value="forecast">
+                <input type="hidden" name="from" value="<?= htmlspecialchars($range['from']) ?>">
+                <input type="hidden" name="to" value="<?= htmlspecialchars($range['to']) ?>">
+                <div class="rpt-filters__row rpt-filters__row--forecast">
+                    <label class="rpt-field">
+                        <span>Disease</span>
+                        <select name="disease" class="form-select form-select-sm" id="rptFcDisease">
+                            <?php foreach ($fcDiseaseOptions as $opt): ?>
+                                <option value="<?= htmlspecialchars((string) $opt['value']) ?>"<?= $forecastDisease === (string) $opt['value'] ? ' selected' : '' ?>><?= htmlspecialchars((string) $opt['label']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label class="rpt-field">
+                        <span>View Mode</span>
+                        <select name="mode" class="form-select form-select-sm" id="rptFcMode">
+                            <option value="chart"<?= $forecastViewMode === 'chart' ? ' selected' : '' ?>>Chart</option>
+                            <option value="table"<?= $forecastViewMode === 'table' ? ' selected' : '' ?>>Table</option>
+                        </select>
+                    </label>
+                    <label class="rpt-field">
+                        <span>Time Interval</span>
+                        <select name="interval" class="form-select form-select-sm" id="rptFcInterval">
+                            <option value="weekly"<?= $forecastInterval === 'weekly' ? ' selected' : '' ?>>Weekly</option>
+                            <option value="monthly"<?= $forecastInterval === 'monthly' ? ' selected' : '' ?>>Monthly</option>
+                        </select>
+                    </label>
+                    <label class="rpt-field">
+                        <span>Forecast Period</span>
+                        <select name="forecast_days" class="form-select form-select-sm" id="rptFcHorizon">
+                            <option value="7"<?= $forecastDays === 7 ? ' selected' : '' ?>>Next 7 Days</option>
+                            <option value="14"<?= $forecastDays === 14 ? ' selected' : '' ?>>Next 14 Days</option>
+                            <option value="30"<?= $forecastDays === 30 ? ' selected' : '' ?>>Next 30 Days</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-arrow-repeat"></i> Update</button>
+                </div>
+            </form>
+            <?php else: ?>
             <form class="rpt-filters" method="get" action="<?= BASE_URL ?>/reports.php" id="rptFilterForm">
                 <div class="rpt-filters__row">
                     <span class="rpt-filters__group-label">Period</span>
@@ -123,6 +222,7 @@ require_once __DIR__ . '/includes/header.php';
                         </select>
                     </label>
                     <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-arrow-repeat"></i> Update</button>
+                    <input type="hidden" name="forecast_days" value="<?= (int) $forecastDays ?>">
                 </div>
                 <div class="rpt-presets" role="group" aria-label="Quick date ranges">
                     <?php foreach ($presets as $p): ?>
@@ -132,8 +232,10 @@ require_once __DIR__ . '/includes/header.php';
                     <?php endforeach; ?>
                 </div>
             </form>
+            <?php endif; ?>
         </div>
 
+        <?php if ($reportView !== 'forecast'): ?>
         <div class="row g-2 rpt-kpis no-print">
             <div class="col-6 col-md-3">
                 <div class="rpt-kpi rpt-kpi--blue">
@@ -168,65 +270,11 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <section class="rpt-card rpt-card--forecast no-print">
-            <div class="rpt-card__head">
-                <span class="rpt-card__icon rpt-card__icon--violet"><i class="bi bi-graph-up-arrow"></i></span>
-                <div>
-                    <h2 class="rpt-card__title">Case forecast (projection)</h2>
-                    <span class="rpt-type-badge">Trend · next <?= (int) ($forecast['horizon_days'] ?? 14) ?> days</span>
-                    <p class="rpt-card__hint"><?= htmlspecialchars((string) ($forecast['disclaimer'] ?? '')) ?></p>
-                </div>
-            </div>
-            <?php if ($forecastRows === []): ?>
-                <p class="rpt-forecast-empty"><i class="bi bi-info-circle"></i> Not enough diagnosis history to project trends. Encode more consults with diagnoses.</p>
-            <?php else: ?>
-                <div class="row g-2">
-                    <div class="col-lg-7">
-                        <div class="table-responsive">
-                            <table class="table table-sm rpt-forecast-table">
-                                <thead>
-                                    <tr>
-                                        <th>Disease</th>
-                                        <th class="text-end">Last 14d</th>
-                                        <th class="text-end">Prior 14d</th>
-                                        <th>Trend</th>
-                                        <th class="text-end">Projected (next <?= (int) ($forecast['horizon_days'] ?? 14) ?>d)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($forecastRows as $row): ?>
-                                        <?php
-                                        $trend = (string) ($row['trend'] ?? 'stable');
-                                        $badgeClass = match ($trend) {
-                                            'up' => 'rpt-trend rpt-trend--up',
-                                            'down' => 'rpt-trend rpt-trend--down',
-                                            default => 'rpt-trend rpt-trend--stable',
-                                        };
-                                        $pct = $row['pct_change'];
-                                        $pctLabel = $pct === null ? '—' : (($pct >= 0 ? '+' : '') . $pct . '%');
-                                        ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars((string) $row['disease']) ?></td>
-                                            <td class="text-end"><?= (int) ($row['recent_14'] ?? 0) ?></td>
-                                            <td class="text-end"><?= (int) ($row['previous_14'] ?? 0) ?> <span class="rpt-muted-sm">(<?= htmlspecialchars($pctLabel) ?>)</span></td>
-                                            <td><span class="<?= $badgeClass ?>"><?= htmlspecialchars((string) ($row['trend_label'] ?? '')) ?></span></td>
-                                            <td class="text-end">~<?= (int) ($row['projected_mid'] ?? 0) ?> <span class="rpt-muted-sm">(<?= (int) ($row['projected_low'] ?? 0) ?>–<?= (int) ($row['projected_high'] ?? 0) ?>)</span></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-lg-5">
-                        <div class="rpt-chart-shell">
-                            <p class="rpt-forecast-chart-title">Top disease — history &amp; projected daily cases</p>
-                            <div class="rpt-chart-wrap rpt-chart-wrap--forecast"><canvas id="rptChartForecast"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
-        </section>
+        <?php if ($reportView === 'forecast'): ?>
+        <?php require __DIR__ . '/reports/partials/forecast-dashboard.php'; ?>
+        <?php else: ?>
 
         <div class="row g-2 rpt-main">
             <div class="col-xl-8">
@@ -359,12 +407,14 @@ require_once __DIR__ . '/includes/header.php';
                 </aside>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 
 </div>
 
 <script>
 window.RHU_REPORTS = <?= json_encode($report, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+window.RHU_FORECAST_DASH = <?= json_encode($forecastDash, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

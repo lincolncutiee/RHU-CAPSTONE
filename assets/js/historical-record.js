@@ -1073,24 +1073,7 @@ const HistoricalRecordWizard = (() => {
 
     function validateCreatePatientFields() {
         const data = getCreatePatientData();
-        const required = {
-            last_name: 'Last Name',
-            first_name: 'First Name',
-            sex: 'Sex',
-            birth_date: 'Date of Birth',
-            address_barangay: 'Barangay',
-            philhealth_no: 'PhilHealth Number',
-            civil_status: 'Civil Status',
-            contact_number: 'Contact Number',
-        };
-        const missing = Object.entries(required)
-            .filter(([key]) => !data[key])
-            .map(([, label]) => label);
-
-        if (missing.length) {
-            Swal.fire({ icon: 'warning', title: 'Incomplete information', html: `Please complete:<br><strong>${missing.join(', ')}</strong>` });
-            return false;
-        }
+        const missing = [];
         if (getSelectedRecordTypes('create').length === 0 && !isImageOnlyFlow()) {
             Swal.fire({ icon: 'warning', title: 'Select form type(s)', text: 'Check at least one form type you are adding.' });
             return false;

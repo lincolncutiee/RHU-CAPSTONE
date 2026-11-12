@@ -275,11 +275,11 @@ $hrFieldLabel = static function (string $text, string $fieldKey) use ($hrRequire
                         <div class="row g-2">
                             <div class="col-md-4">
                                 <label for="hrPatLastName" class="form-label small mb-1"><?= $hrFieldLabel('Last Name', 'last_name') ?></label>
-                                <input type="text" class="form-control form-control-sm" id="hrPatLastName" required>
+                                <input type="text" class="form-control form-control-sm" id="hrPatLastName">
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatFirstName" class="form-label small mb-1"><?= $hrFieldLabel('First Name', 'first_name') ?></label>
-                                <input type="text" class="form-control form-control-sm" id="hrPatFirstName" required>
+                                <input type="text" class="form-control form-control-sm" id="hrPatFirstName">
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatMiddleName" class="form-label small mb-1"><?= $hrFieldLabel('Middle Name', 'middle_name') ?></label>
@@ -287,7 +287,7 @@ $hrFieldLabel = static function (string $text, string $fieldKey) use ($hrRequire
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatBirthDate" class="form-label small mb-1"><?= $hrFieldLabel('Date of Birth', 'birth_date') ?></label>
-                                <input type="date" class="form-control form-control-sm" id="hrPatBirthDate" required>
+                                <input type="date" class="form-control form-control-sm" id="hrPatBirthDate">
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatAge" class="form-label small mb-1"><?= $hrFieldLabel('Age', 'age') ?></label>
@@ -295,7 +295,7 @@ $hrFieldLabel = static function (string $text, string $fieldKey) use ($hrRequire
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatSex" class="form-label small mb-1"><?= $hrFieldLabel('Sex', 'sex') ?></label>
-                                <select class="form-select form-select-sm" id="hrPatSex" required>
+                                <select class="form-select form-select-sm" id="hrPatSex">
                                     <option value="">Select</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -303,7 +303,7 @@ $hrFieldLabel = static function (string $text, string $fieldKey) use ($hrRequire
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatBarangay" class="form-label small mb-1"><?= $hrFieldLabel('Barangay', 'address_barangay') ?></label>
-                                <select class="form-select form-select-sm" id="hrPatBarangay" required>
+                                <select class="form-select form-select-sm" id="hrPatBarangay">
                                     <option value="">Select barangay</option>
                                     <?php foreach ($hrBarangays as $brgy): ?>
                                         <option value="<?= htmlspecialchars($brgy) ?>"><?= htmlspecialchars($brgy) ?></option>
@@ -312,11 +312,11 @@ $hrFieldLabel = static function (string $text, string $fieldKey) use ($hrRequire
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatPhilhealth" class="form-label small mb-1"><?= $hrFieldLabel('PhilHealth Number', 'philhealth_no') ?></label>
-                                <input type="text" class="form-control form-control-sm" id="hrPatPhilhealth" required>
+                                <input type="text" class="form-control form-control-sm" id="hrPatPhilhealth">
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatCivilStatus" class="form-label small mb-1"><?= $hrFieldLabel('Civil Status', 'civil_status') ?></label>
-                                <select class="form-select form-select-sm" id="hrPatCivilStatus" required>
+                                <select class="form-select form-select-sm" id="hrPatCivilStatus">
                                     <option value="">Select</option>
                                     <?php foreach ($hrCivilStatuses as $cs): ?>
                                         <option value="<?= htmlspecialchars($cs) ?>"><?= htmlspecialchars($cs) ?></option>
@@ -325,7 +325,7 @@ $hrFieldLabel = static function (string $text, string $fieldKey) use ($hrRequire
                             </div>
                             <div class="col-md-4">
                                 <label for="hrPatContact" class="form-label small mb-1"><?= $hrFieldLabel('Contact Number', 'contact_number') ?></label>
-                                <input type="text" class="form-control form-control-sm" id="hrPatContact" required>
+                                <input type="text" class="form-control form-control-sm" id="hrPatContact">
                             </div>
                         </div>
                     </div>

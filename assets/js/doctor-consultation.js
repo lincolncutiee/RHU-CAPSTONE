@@ -353,12 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const medIds = parsedMedicationIds();
             const medText = (document.getElementById('medication_treatment')?.value || '').trim();
-            if (medIds.length === 0) {
-                throw new Error(
-                    medText
-                        ? 'Missing medications in the master list. Choose each medicine from the suggestion list before sending.'
-                        : 'Missing medications. Add at least one prescription before sending to Pharmacy.'
-                );
+            if (medIds.length === 0 && !medText) {
+                throw new Error('Missing medications. Add at least one prescription before sending to Pharmacy.');
             }
 
             await saveDraft({ showSuccess: false, showErrors: false, rethrow: true });

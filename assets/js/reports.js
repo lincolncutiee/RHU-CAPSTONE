@@ -57,8 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tooltip = chartTooltip();
 
     const charts = {};
+    const analyticsCanvas = document.getElementById('rptChartColumn');
 
-    charts.column = new Chart(document.getElementById('rptChartColumn'), {
+    if (analyticsCanvas) {
+    charts.column = new Chart(analyticsCanvas, {
         type: 'bar',
         data: {
             labels: dailyLabels,
@@ -222,15 +224,145 @@ document.addEventListener('DOMContentLoaded', () => {
         palette.green,
     );
     toggleEmptyState('ageBar', demoMixIsEmpty(ageLabels, ageValues));
+    }
+
+    const dash = window.RHU_FORECAST_DASH;
+    const barCanvas = document.getElementById('rptChartForecastBars');
+    if (barCanvas && dash?.chart?.labels?.length) {
+        const chart = dash.chart;
+        charts.forecastBars = new Chart(barCanvas, {
+            type: 'bar',
+            data: {
+                labels: chart.labels || [],
+                datasets: [
+                    {
+                        label: 'Historical Cases',
+                        data: chart.historical || [],
+                        backgroundColor: 'rgba(22, 163, 74, 0.88)',
+                        borderColor: '#15803d',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        maxBarThickness: 42,
+                    },
+                    {
+                        label: 'Forecasted Cases',
+                        data: chart.forecasted || [],
+                        backgroundColor: 'rgba(234, 88, 12, 0.88)',
+                        borderColor: '#c2410c',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        maxBarThickness: 42,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, padding: 16, font: { size: 12, weight: '600' } },
+                    },
+                    title: {
+                        display: true,
+                        text: chart.title || 'Historical vs. Forecasted Disease Cases',
+                        color: '#0f172a',
+                        font: { size: 15, weight: '700' },
+                        padding: { bottom: 12 },
+                    },
+                    tooltip: {
+                        ...tooltip,
+                        callbacks: {
+                            label(ctx) {
+                                const v = ctx.parsed.y;
+                                if (v === null || Number.isNaN(v)) return `${ctx.dataset.label}: —`;
+                                return `${ctx.dataset.label}: ${v}`;
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: chart.x_axis_label || 'Date',
+                            color: '#334155',
+                            font: { size: 12, weight: '600' },
+                        },
+                        grid: { display: false },
+                        ticks: { font: { size: 10 }, maxRotation: 45, minRotation: 0 },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: chart.y_axis_label || 'Number of disease cases',
+                            color: '#334155',
+                            font: { size: 12, weight: '600' },
+                        },
+                        grid: { color: '#e2e8f0' },
+                        ticks: { font: { size: 11 }, precision: 0, stepSize: 1 },
+                    },
+                },
+            },
+        });
+    }
 
     const fc = payload.forecast_series || {};
     const fcCanvas = document.getElementById('rptChartForecast');
     if (fcCanvas && fc.labels?.length) {
+        const splitAt = Number(fc.split_index || 0);
+        const forecastDivider = {
+            id: 'forecastDivider',
+            afterDatasetsDraw(chart) {
+                if (!splitAt) return;
+                const xScale = chart.scales.x;
+                const area = chart.chartArea;
+                const left = xScale.getPixelForTick(Math.max(0, splitAt - 1));
+                const right = xScale.getPixelForTick(Math.min(splitAt, (fc.labels.length || 1) - 1));
+                const x = Number.isFinite(left) && Number.isFinite(right) ? (left + right) / 2 : left;
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 1;
+                ctx.moveTo(x, area.top);
+                ctx.lineTo(x, area.bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#475569';
+                ctx.font = '10px ' + systemFontStack();
+                ctx.fillText('Forecast', x + 6, area.top + 12);
+                ctx.restore();
+            },
+        };
         charts.forecast = new Chart(fcCanvas, {
             type: 'line',
             data: {
                 labels: fc.labels,
                 datasets: [
+                    {
+                        label: 'Uncertainty high',
+                        data: fc.forecast_high || [],
+                        borderColor: 'transparent',
+                        backgroundColor: 'rgba(217, 119, 6, 0.16)',
+                        fill: '+1',
+                        pointRadius: 0,
+                        tension: 0.25,
+                        borderWidth: 0,
+                    },
+                    {
+                        label: 'Uncertainty low',
+                        data: fc.forecast_low || [],
+                        borderColor: 'transparent',
+                        backgroundColor: 'rgba(217, 119, 6, 0.16)',
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.25,
+                        borderWidth: 0,
+                    },
                     {
                         label: 'Recorded',
                         data: fc.historical || [],
@@ -250,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         tension: 0.3,
                         pointRadius: 0,
                         borderWidth: 2,
+                        spanGaps: false,
                     },
                 ],
             },
@@ -258,22 +391,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
-                    tooltip,
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 10 },
+                            filter: (item) => item.text === 'Recorded' || item.text === 'Projected',
+                        },
+                    },
+                    tooltip: {
+                        ...tooltip,
+                        filter: (item) => item.dataset.label === 'Recorded' || item.dataset.label === 'Projected',
+                    },
                     title: {
                         display: !!fc.disease,
-                        text: fc.disease || '',
+                        text: (fc.disease || '') + (fc.estimated ? '' : ' · insufficient data'),
                         font: { size: 11, weight: '600' },
                         padding: { bottom: 8 },
                     },
                 },
                 scales: {
                     x: commonScaleX,
-                    y: commonScaleY,
+                    y: { ...commonScaleY, beginAtZero: true },
                 },
             },
+            plugins: [forecastDivider],
         });
     }
+
+    const fcForm = document.getElementById('rptForecastFilterForm');
+    fcForm?.querySelectorAll('select').forEach((el) => {
+        el.addEventListener('change', () => fcForm.requestSubmit());
+    });
 
     const printBtn = document.getElementById('rptPrintBtn');
     printBtn?.addEventListener('click', () => {
@@ -285,6 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const qs = new URLSearchParams({ from, to, preview: '1' });
         if (sex) qs.set('sex', sex);
         if (ageGroup) qs.set('age_group', ageGroup);
+        const horizon = document.querySelector('.rpt-horizon__btn.is-active');
+        if (horizon && horizon.textContent.includes('14')) qs.set('forecast_days', '14');
         const url = `${base}/reports-print.php?${qs.toString()}`;
         window.open(url, '_blank', 'noopener,noreferrer');
     });

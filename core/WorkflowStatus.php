@@ -41,7 +41,6 @@ class WorkflowStatus
         return [
             WORKFLOW_WAITING_FOR_PHARMACY,
             WORKFLOW_DISPENSING,
-            WORKFLOW_DISPENSED,
         ];
     }
 
@@ -117,10 +116,21 @@ class WorkflowStatus
     public static function badgeHtml(string $status, ?string $label = null): string
     {
         $normalized = self::normalize($status);
-        $text = htmlspecialchars($label ?? $normalized);
+        $text = htmlspecialchars($label ?? self::displayLabel($normalized));
         $class = htmlspecialchars(self::badgeClass($normalized));
 
         return '<span class="badge-status ' . $class . '">' . $text . '</span>';
+    }
+
+    /** User-facing label. Stored status values stay unchanged. */
+    public static function displayLabel(string $status): string
+    {
+        $normalized = self::normalize($status);
+        if (self::isPendingItValidation($normalized)) {
+            return 'Pending Validation';
+        }
+
+        return $normalized;
     }
 
     /** Statuses where medical data must not be edited. */
@@ -152,12 +162,11 @@ class WorkflowStatus
             WORKFLOW_WAITING_FOR_PHARMACY    => 'Waiting for Pharmacy',
             WORKFLOW_DISPENSING              => 'Dispensing',
             WORKFLOW_DISPENSED               => 'Dispensed',
-            WORKFLOW_PENDING_IT_REVIEW       => 'Pending IT Validation',
+            WORKFLOW_PENDING_IT_REVIEW       => 'Pending Validation',
             WORKFLOW_RETURNED_FOR_CORRECTION => 'Returned for Correction',
             WORKFLOW_READY_FOR_PRINT         => 'Ready for Printing',
             WORKFLOW_PRINTED                 => 'Printed',
             WORKFLOW_ARCHIVED                => 'Archived',
-            WORKFLOW_REJECTED                => 'Rejected',
         ];
     }
 

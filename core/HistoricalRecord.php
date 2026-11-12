@@ -459,16 +459,7 @@ class HistoricalRecord
     /** Fields IT must verify before creating a patient from an old form. */
     public static function requiredPatientVerifyFields(): array
     {
-        return [
-            'last_name'        => 'Last Name',
-            'first_name'       => 'First Name',
-            'sex'              => 'Sex',
-            'birth_date'       => 'Date of Birth',
-            'address_barangay' => 'Barangay',
-            'philhealth_no'    => 'PhilHealth Number',
-            'civil_status'     => 'Civil Status',
-            'contact_number'   => 'Contact Number',
-        ];
+        return [];
     }
 
     /** @param array<string, mixed> $data */

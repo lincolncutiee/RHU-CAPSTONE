@@ -267,6 +267,11 @@ body {
     font-size: 0.65rem;
 }
 
+.topnav-dropdown-menu .dropdown-item i {
+    margin-right: 0.35rem;
+    opacity: 0.85;
+}
+
 .topnav-end {
     display: flex;
     align-items: center;

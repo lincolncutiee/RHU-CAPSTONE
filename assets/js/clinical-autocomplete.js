@@ -671,11 +671,7 @@ window.ClinicalAutocomplete = (() => {
             activeIndex = -1;
 
             if (!lastResults.length) {
-                const li = document.createElement('li');
-                li.className = 'dc-ac-empty';
-                li.textContent = 'No matching medications';
-                listEl.appendChild(li);
-                listEl.hidden = false;
+                hideList();
                 return;
             }
 

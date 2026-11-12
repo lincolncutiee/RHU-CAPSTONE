@@ -419,6 +419,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return !!(pane && pane.dataset.isReview !== '1');
     }
 
+    /**
+     * Completeness rule.owner (form-completeness.php) vs session role.
+     * If a page only has rules for another role, we should not show ✕ for the current user.
+     */
+    function shouldSkipRuleForRole(rule) {
+        if (!rule || !rule.owner) return false;
+        const role = String(cfg.role || '');
+        const o = rule.owner;
+        if (o === 'doctor') {
+            return role !== 'doctor';
+        }
+        if (o === 'it') {
+            return role !== 'it_department';
+        }
+        if (o === 'records') {
+            return role !== 'records_office';
+        }
+        return false;
+    }
+
     /** True when completeness rules for this page are satisfied (no Swal). */
     function isPageFilled(pageIndex) {
         const pane = document.querySelector(`.wizard-page-pane[data-page-index="${pageIndex}"]`);
@@ -435,9 +455,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const rules = cfg.completenessRules || {};
         let evaluated = 0;
+        let skippedForRoleOnly = false;
         for (const key of ruleKeys) {
             const rule = rules[key];
             if (!rule) continue;
+            if (shouldSkipRuleForRole(rule)) {
+                skippedForRoleOnly = true;
+                continue;
+            }
             // Records cannot complete doctor forms — don't mark those incomplete for them
             if (rule.owner === 'doctor' && cfg.role === 'records_office') continue;
             if (rule.conditional && !isEpressApplicableClient()) continue;
@@ -445,6 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!doesCompletenessRulePass(rule)) return false;
         }
 
+        // No rules applied to this role for this page (e.g. PCSF is IT-only; Records skips) → neutral, not ✕
+        if (evaluated === 0 && skippedForRoleOnly) {
+            return true;
+        }
         // Fail closed: if rules missing/unusable, treat empty panes as incomplete
         if (evaluated === 0) {
             return isPaneRequiredFilled(pane) && !paneHasEmptyCoreFields(pane);
@@ -676,14 +705,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const rules = cfg.completenessRules || {};
         const missing = [];
 
+        let skippedForRoleOnly = false;
+        let hadApplicableRule = false;
         for (const key of ruleKeys) {
             const rule = rules[key];
             if (!rule) continue;
+            if (shouldSkipRuleForRole(rule)) {
+                skippedForRoleOnly = true;
+                continue;
+            }
             if (rule.owner === 'doctor' && cfg.role === 'records_office') continue;
             if (rule.conditional && !isEpressApplicableClient()) continue;
+            hadApplicableRule = true;
             missing.push(...collectMissingFromRule(rule));
         }
 
+        if (!hadApplicableRule && skippedForRoleOnly) {
+            return [];
+        }
         if (!missing.length && (paneHasEmptyCoreFields(pane) || !isPaneRequiredFilled(pane))) {
             missing.push('Some required fields on this page are still empty');
         }
@@ -1312,7 +1351,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const patientDbId = parseInt(document.getElementById('patientDbId')?.value || '0', 10);
 
         let serverIssues = [];
-        let complete = false;
+        let displayComplete = false;
+        let submitComplete = false;
 
         if (statusEl) {
             statusEl.textContent = 'Checking…';
@@ -1325,16 +1365,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cfg.role === 'records_office' && !cfg.isLocked) {
                     await saveDraft(true);
                 }
-                const res = await fetch(`${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${patientDbId}`);
-                const data = await res.json();
-                if (data.success) {
-                    complete = !!data.complete;
-                    serverIssues = data.issues || [];
+                const urls = [
+                    `${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${patientDbId}&scope=display`,
+                    `${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${patientDbId}&scope=submit`,
+                ];
+                const [displayRes, submitRes] = await Promise.all(urls.map((u) => fetch(u)));
+                const displayData = await displayRes.json();
+                const submitData = await submitRes.json();
+                if (displayData.success) {
+                    displayComplete = !!displayData.complete;
+                    serverIssues = displayData.issues || [];
                 } else if (statusEl) {
                     statusEl.textContent = 'Validation unavailable';
                 }
+                if (submitData.success) {
+                    submitComplete = !!submitData.complete;
+                }
             } catch (e) {
-                complete = false;
+                displayComplete = false;
+                submitComplete = false;
                 if (statusEl) statusEl.textContent = 'Validation unavailable';
             }
         } else if (statusEl) {
@@ -1344,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const grouped = groupIssuesByPage(serverIssues);
         const incompleteIndexes = new Set(grouped.map((g) => g.pageIndex));
-        const treatAllComplete = complete && grouped.length === 0;
+        const treatAllComplete = displayComplete && grouped.length === 0;
         const completeCount = treatAllComplete
             ? paperPanes.length
             : paperPanes.filter((p) => !incompleteIndexes.has(parseInt(p.dataset.pageIndex, 10))).length;
@@ -1354,19 +1403,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (pctEl) pctEl.textContent = `${pct}%`;
         if (statusEl && patientDbId > 0) {
-            statusEl.textContent = complete
-                ? 'All documents are ready for submission'
-                : (grouped.length ? 'Incomplete — corrections required' : statusEl.textContent);
-            statusEl.classList.toggle('is-ready', complete);
-            statusEl.classList.toggle('is-incomplete', !complete && grouped.length > 0);
+            statusEl.textContent = submitComplete
+                ? 'Your required sections are ready to submit'
+                : (grouped.length
+                    ? 'Missing fields shown — fix your part; other offices may be read-only'
+                    : statusEl.textContent);
+            statusEl.classList.toggle('is-ready', submitComplete);
+            statusEl.classList.toggle('is-incomplete', !submitComplete && grouped.length > 0);
         }
 
-        setSubmitEnabled(complete && patientDbId > 0);
+        setSubmitEnabled(submitComplete && patientDbId > 0);
 
         list.innerHTML = paperPanes.map((pane) => {
             const index = parseInt(pane.dataset.pageIndex, 10);
             const chip = getReviewChipLabel(pane, index);
-            const ok = treatAllComplete || (patientDbId > 0 && !incompleteIndexes.has(index) && (complete || grouped.length > 0));
+            const ok = treatAllComplete || (patientDbId > 0 && !incompleteIndexes.has(index) && (displayComplete || grouped.length > 0));
             const label = !patientDbId
                 ? 'Pending'
                 : (ok ? 'Complete' : (incompleteIndexes.has(index) ? 'Incomplete' : 'Complete'));
@@ -1497,7 +1548,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let checkData = null;
         try {
-            const res = await fetch(`${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${patientDbId}`);
+            const res = await fetch(
+                `${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${patientDbId}&scope=submit`
+            );
             checkData = await res.json();
         } catch (e) {
             Swal.fire('Error', 'Could not validate forms before submission.', 'error');
@@ -1824,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function missingProfileCreateFields() {
-        const required = cfg.profileRequired || ['last_name', 'first_name', 'sex', 'birth_date'];
+        const required = cfg.profileRequired || [];
         const labels = {
             last_name: 'Last Name',
             first_name: 'First Name',

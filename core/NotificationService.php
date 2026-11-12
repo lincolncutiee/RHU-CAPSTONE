@@ -52,9 +52,13 @@ class NotificationService
         array $patient,
         string $event,
         array $actor,
-        string $remarks = ''
+        string $remarks = '',
+        ?int $notifyUserId = null,
+        ?int $consultationId = null
     ): void {
-        $encoderId = (int) ($patient['encoded_by'] ?? 0);
+        $encoderId = $notifyUserId !== null && $notifyUserId > 0
+            ? $notifyUserId
+            : (int) ($patient['encoded_by'] ?? 0);
         if ($encoderId <= 0) {
             return;
         }
@@ -63,15 +67,23 @@ class NotificationService
         $patientCode = $patient['patient_id'] ?? '';
         $actorName = $actor['full_name'] ?? 'IT Staff';
         $link = BASE_URL . '/forms/doh-form.php?id=' . $patientDbId;
+        if ($consultationId !== null && $consultationId > 0) {
+            $link .= '&consultation_id=' . $consultationId;
+        }
 
         switch ($event) {
             case 'returned_for_correction':
+                $message = 'Patient PIN: ' . $patientCode . "\n\n";
+                $message .= 'Returned for correction by ' . $actorName . ".\n\n";
+                $message .= "Reason / remarks:\n";
+                $message .= $remarks !== '' ? $remarks : '(No remarks provided)';
+                $message .= "\n\nOpen the DOH encoding form (button below) to apply corrections.";
+
                 self::create(
                     $conn,
                     $encoderId,
-                    'Returned by IT',
-                    'Consultation ' . $patientCode . ' was returned for correction by ' . $actorName . '.'
-                        . ($remarks !== '' ? "\nReason: " . $remarks : ''),
+                    'Returned for Correction',
+                    $message,
                     $patientDbId,
                     $link
                 );

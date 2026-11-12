@@ -988,36 +988,63 @@ class ClinicalMaster
     }
 
     /**
-     * Resolve medication IDs from clinical-notes textarea (one official label per line).
+     * Create (or reuse) a medication_master row for a free-typed prescription line.
+     * Suggestions still match existing rows; typed text that is not in the list is saved as a new active generic.
+     */
+    public static function ensureMedicationIdByLabel(mysqli $conn, string $label): int
+    {
+        self::ensureSchema($conn);
+        $label = trim($label);
+        if ($label === '') {
+            return 0;
+        }
+
+        $existing = self::findMedicationIdByLabel($conn, $label);
+        if ($existing > 0) {
+            return $existing;
+        }
+
+        $generic = mb_strlen($label) > 255 ? mb_substr($label, 0, 255) : $label;
+        $stmt = $conn->prepare(
+            "INSERT INTO medication_master (generic_name, brand_name, strength, dosage_form, status)
+             VALUES (?, NULL, NULL, NULL, 'active')"
+        );
+        $stmt->bind_param('s', $generic);
+        $stmt->execute();
+        $newId = (int) $conn->insert_id;
+        $stmt->close();
+
+        return $newId;
+    }
+
+    /**
+     * Resolve medication IDs from clinical-notes textarea (one label per line).
+     * Free-typed lines are accepted and stored in medication_master.
      * @return list<int>
      */
     public static function resolveMedicationIdsFromPost(mysqli $conn, array $post): array
     {
         $fromLabels = [];
         foreach (self::splitLines($post['medication_treatment'] ?? '') as $label) {
-            $id = self::findMedicationIdByLabel($conn, $label);
+            $id = self::ensureMedicationIdByLabel($conn, $label);
             if ($id > 0) {
                 $fromLabels[$id] = $id;
             }
         }
-        if ($fromLabels !== []) {
-            return array_values($fromLabels);
+        foreach (self::parseIdList($post['medication_ids'] ?? null) as $id) {
+            if (self::medicationExists($conn, (int) $id)) {
+                $fromLabels[(int) $id] = (int) $id;
+            }
         }
-        return self::parseIdList($post['medication_ids'] ?? null);
+        return array_values($fromLabels);
     }
 
     /**
-     * @return list<string> unresolved medication lines
+     * @return list<string> unresolved medication lines (always empty — free text is accepted)
      */
     public static function unresolvedMedicationLines(mysqli $conn, array $post): array
     {
-        $unresolved = [];
-        foreach (self::splitLines($post['medication_treatment'] ?? '') as $label) {
-            if (self::findMedicationIdByLabel($conn, $label) <= 0) {
-                $unresolved[] = $label;
-            }
-        }
-        return $unresolved;
+        return [];
     }
 
     private static function escapeLike(string $value): string

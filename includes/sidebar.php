@@ -44,7 +44,12 @@ $sidebarCanHeatMap = Permissions::can('heatmap.view');
                     <span>Reports</span>
                 </a>
             </li>
-            <?php endif; ?>
+            <li class="nav-item">
+                <a href="<?= BASE_URL ?>/reports.php?view=forecast" class="nav-link <?= ($activePage ?? '') === 'forecast' ? 'active' : '' ?>">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Case Forecast</span>
+                </a>
+            </li>
             <?php if ($sidebarCanHeatMap): ?>
             <li class="nav-item">
                 <a href="<?= BASE_URL ?>/heat-map.php" class="nav-link <?= ($activePage ?? '') === 'heat-map' ? 'active' : '' ?>">
@@ -52,6 +57,7 @@ $sidebarCanHeatMap = Permissions::can('heatmap.view');
                     <span>Heat Map</span>
                 </a>
             </li>
+            <?php endif; ?>
             <?php endif; ?>
             <?php elseif (($user['role'] ?? '') === ROLE_IT): ?>
             <li class="nav-item">
@@ -75,7 +81,7 @@ $sidebarCanHeatMap = Permissions::can('heatmap.view');
             <li class="nav-item">
                 <a href="<?= BASE_URL ?>/validation-status.php" class="nav-link <?= $activePage === 'validation' ? 'active' : '' ?>">
                     <i class="bi bi-shield-check"></i>
-                    <span>IT Review Queue</span>
+                    <span>Review Queue</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -103,7 +109,12 @@ $sidebarCanHeatMap = Permissions::can('heatmap.view');
                     <span>Reports</span>
                 </a>
             </li>
-            <?php endif; ?>
+            <li class="nav-item">
+                <a href="<?= BASE_URL ?>/reports.php?view=forecast" class="nav-link <?= ($activePage ?? '') === 'forecast' ? 'active' : '' ?>">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Case Forecast</span>
+                </a>
+            </li>
             <?php if ($sidebarCanHeatMap): ?>
             <li class="nav-item">
                 <a href="<?= BASE_URL ?>/heat-map.php" class="nav-link <?= ($activePage ?? '') === 'heat-map' ? 'active' : '' ?>">
@@ -111,6 +122,7 @@ $sidebarCanHeatMap = Permissions::can('heatmap.view');
                     <span>Heat Map</span>
                 </a>
             </li>
+            <?php endif; ?>
             <?php endif; ?>
             <?php elseif (($user['role'] ?? '') === ROLE_PHARMACY): ?>
             <li class="nav-item">

@@ -36,7 +36,7 @@ class Workflow
         ROLE_RECORDS      => [WORKFLOW_DRAFT, WORKFLOW_REJECTED, WORKFLOW_RETURNED_FOR_CORRECTION],
         ROLE_RECEPTIONIST => [WORKFLOW_PENDING_RECEPTIONIST],
         ROLE_DOCTOR       => [WORKFLOW_WAITING_FOR_DOCTOR, 'Pending Doctor'],
-        ROLE_PHARMACY     => [WORKFLOW_WAITING_FOR_PHARMACY, WORKFLOW_DISPENSING, WORKFLOW_DISPENSED],
+        ROLE_PHARMACY     => [WORKFLOW_WAITING_FOR_PHARMACY, WORKFLOW_DISPENSING],
         ROLE_IT           => [WORKFLOW_PENDING_IT_REVIEW, WORKFLOW_READY_FOR_PRINT, WORKFLOW_PRINTED],
     ];
 
@@ -272,12 +272,33 @@ class Workflow
             $toStatus = WORKFLOW_WAITING_FOR_DOCTOR;
         }
 
+        $returnToUserId = (int) ($user['_return_to_user_id'] ?? 0);
+        $isReturnForCorrection = in_array($action, ['return_for_correction', 'reject_to_encoder'], true);
+
+        if ($isReturnForCorrection) {
+            if ($returnToUserId <= 0) {
+                $returnToUserId = (int) ($patient['encoded_by'] ?? 0);
+            }
+            if ($returnToUserId <= 0) {
+                throw new RuntimeException('Select a staff member to return this record to.');
+            }
+            self::assertActiveUser($conn, $returnToUserId);
+        }
+
         if ($toStatus === WORKFLOW_ARCHIVED) {
             $stmt = $conn->prepare('UPDATE patients SET status = ?, is_archived = 1 WHERE id = ?');
             $stmt->bind_param('si', $toStatus, $patientId);
         } elseif ($toStatus === WORKFLOW_RETURNED_FOR_CORRECTION || $toStatus === WORKFLOW_REJECTED) {
-            $stmt = $conn->prepare('UPDATE patients SET status = ?, rejection_reason = ? WHERE id = ?');
-            $stmt->bind_param('ssi', $toStatus, $remarks, $patientId);
+            if ($isReturnForCorrection) {
+                $stmt = $conn->prepare(
+                    'UPDATE patients SET status = ?, rejection_reason = ?, encoded_by = ? WHERE id = ?'
+                );
+                $stmt->bind_param('ssii', $toStatus, $remarks, $returnToUserId, $patientId);
+                $patient['encoded_by'] = $returnToUserId;
+            } else {
+                $stmt = $conn->prepare('UPDATE patients SET status = ?, rejection_reason = ? WHERE id = ?');
+                $stmt->bind_param('ssi', $toStatus, $remarks, $patientId);
+            }
         } elseif (!empty($config['set_validated'])) {
             $stmt = $conn->prepare('UPDATE patients SET status = ?, rejection_reason = NULL, validated_by = ? WHERE id = ?');
             $stmt->bind_param('sii', $toStatus, $uid, $patientId);
@@ -317,12 +338,16 @@ class Workflow
         }
 
         if (!empty($config['notify'])) {
+            $notifyUserId = $isReturnForCorrection ? $returnToUserId : 0;
+            $consultForLink = (int) ($user['_consultation_id'] ?? 0);
             NotificationService::notifyWorkflow(
                 $conn,
                 $patient,
                 $config['notify'],
                 $user,
-                $remarks
+                $remarks,
+                $notifyUserId > 0 ? $notifyUserId : null,
+                $consultForLink > 0 ? $consultForLink : null
             );
         }
 
@@ -384,8 +409,21 @@ class Workflow
             ROLE_IT           => 'Validate consultations, then print official forms',
             ROLE_RECEPTIONIST => 'IT-approved patients ready for queue assignment',
             ROLE_DOCTOR       => 'FIFO queue — Waiting for Doctor (today only)',
-            ROLE_PHARMACY     => 'Patients sent by the doctor — Waiting / Dispensing / Dispensed',
+            ROLE_PHARMACY     => 'Patients waiting for the pharmacist',
             default           => 'Patient records assigned to your office',
         };
+    }
+
+    private static function assertActiveUser(mysqli $conn, int $userId): void
+    {
+        $stmt = $conn->prepare('SELECT id FROM users WHERE id = ? AND is_active = 1 LIMIT 1');
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$row) {
+            throw new RuntimeException('The selected user is not an active account.');
+        }
     }
 }

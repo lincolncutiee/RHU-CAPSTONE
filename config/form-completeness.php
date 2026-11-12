@@ -1,62 +1,63 @@
 <?php
 /**
  * Required fields per official RHU form for IT readiness validation.
+ * Currently empty: no fields are mandatory (demo / free fill-up).
  */
 return [
   'pcsf' => [
     'label' => 'PhilHealth Primary Care Selection Form (PCSF)',
     'owner' => 'it',
-    'patient' => ['philhealth_no', 'last_name', 'first_name', 'birth_date'],
-    'extended' => ['pcsf_date'],
-    'custom' => ['philhealth_format'],
+    'patient' => [],
+    'extended' => [],
+    'custom' => [],
   ],
   'itr' => [
     'label' => 'Individual Treatment Record',
-    'treatment' => ['date_of_consultation', 'chief_complaints', 'mode_of_transaction'],
-    'custom' => ['consultation_types'],
+    'treatment' => [],
+    'custom' => [],
   ],
   'enrollment' => [
     'label' => 'Patient Enrollment Record',
-    'patient' => ['last_name', 'first_name', 'sex', 'birth_date', 'contact_number', 'family_serial_number'],
-    'patient_consent' => ['consent_signature_date', 'chu_representative'],
-    'custom' => ['family_serial_format'],
+    'patient' => [],
+    'patient_consent' => [],
+    'custom' => [],
   ],
   'past_medical_history' => [
     'label' => 'Past Medical History',
-    'custom' => ['pmh_completed'],
+    'custom' => [],
   ],
   'past_surgical_history' => [
     'label' => 'Past Surgical History',
-    'custom' => ['psh_surgical_completed'],
+    'custom' => [],
   ],
   'family_history' => [
     'label' => 'Family History',
-    'custom' => ['fh_completed'],
+    'custom' => [],
   ],
   'personal_social_history' => [
     'label' => 'Personal / Social History',
-    'extended' => ['psh_smoking', 'psh_alcohol', 'psh_drugs'],
+    'extended' => [],
   ],
   'ncd_assessment' => [
     'label' => 'NCD High-Risk Assessment',
-    'extended' => ['ncd_diabetes', 'ncd_physical'],
+    'extended' => [],
   ],
   'photo_consent' => [
     'label' => 'Photo Consent Form',
-    'extended' => ['photo_consent_name', 'photo_consent_date'],
+    'extended' => [],
   ],
   'ekas' => [
     'label' => 'Electronic Konsulta Availment Slip (EKAS)',
     'owner' => 'doctor',
-    'patient' => ['philhealth_no'],
-    'extended' => ['ekas_hci_name'],
+    'patient' => [],
+    'extended' => [],
   ],
   'epress' => [
     'label' => 'Electronic Prescription Slip (EPRESS)',
     'owner' => 'doctor',
     'conditional' => true,
-    'custom' => ['epress_if_applicable'],
-    'patient' => ['philhealth_no'],
-    'extended' => ['epress_hci_name'],
+    'custom' => [],
+    'patient' => [],
+    'extended' => [],
   ],
 ];

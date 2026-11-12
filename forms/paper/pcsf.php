@@ -45,7 +45,7 @@ $addrRow = static function (string $brgy, string $city, string $prov) use ($P, $
         <strong style="color:#0066b3;font-size:8.5pt;">INSTRUCTIONS</strong>
         <ol class="pf-instructions pf-pcsf-instructions">
             <li>All information should be written in UPPER CASE/ CAPITAL LETTER.</li>
-            <li>All fields are mandatory.</li>
+            <li>Fields may be filled as available.</li>
             <li>If the beneficiary is dependent, use the dependent PIN.</li>
             <li>If the beneficiary is below 21 years old, the signatory should be the parent/guardian.</li>
         </ol>

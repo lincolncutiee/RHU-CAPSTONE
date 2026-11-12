@@ -25,7 +25,7 @@ $extraCSS = [BASE_URL . '/assets/css/patient-records.css?v=13'];
 if ($canAddHistorical) {
     $extraCSS[] = BASE_URL . '/assets/css/historical-record.css?v=8';
 }
-$extraJS = [BASE_URL . '/assets/js/main.js', BASE_URL . '/assets/js/patient-records.js?v=15'];
+$extraJS = [BASE_URL . '/assets/js/main.js', BASE_URL . '/assets/js/patient-records.js?v=16'];
 if ($canAddHistorical) {
     $extraJS[] = BASE_URL . '/assets/js/historical-record.js?v=11';
 }

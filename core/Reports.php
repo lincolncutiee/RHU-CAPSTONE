@@ -70,6 +70,7 @@ class Reports
         string $from,
         string $to,
         ?ReportFilters $filters = null,
+        int $forecastDays = 7,
     ): array {
         WorkflowStatus::ensurePatientsStatusEnum($conn);
         $filters ??= new ReportFilters();
@@ -85,8 +86,10 @@ class Reports
         $heatmap = HeatMap::build($conn, $from, $to, null, $filters);
         $casesByBarangay = self::casesByBarangayChart($heatmap, 10);
         $commonDiseases = self::commonDiseasesInPeriod($conn, $from, $to, 8, $filters);
-        $forecasts = ReportForecast::diseaseForecasts($conn, $to, $filters, 8);
-        $forecastSeries = ReportForecast::topDiseaseSeries($conn, $to, $filters);
+        $horizonDays = ReportForecast::normalizeHorizon($forecastDays);
+        $forecasts = ReportForecast::diseaseForecasts($conn, $to, $filters, 8, $horizonDays);
+        $chartDisease = $forecasts['rows'][0]['disease'] ?? null;
+        $forecastSeries = ReportForecast::topDiseaseSeries($conn, $to, $filters, 42, $horizonDays, is_string($chartDisease) ? $chartDisease : null);
 
         $filterLabels = $filters->summaryLabels();
 

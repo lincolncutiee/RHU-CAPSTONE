@@ -852,6 +852,16 @@ const PatientRecordsPage = (() => {
             el?.addEventListener('change', refreshList);
         });
 
+        const pageParams = new URLSearchParams(window.location.search);
+        const statusParam = pageParams.get('status') || '';
+        const dateParam = pageParams.get('date') || '';
+        if (filterStatus && statusParam && [...filterStatus.options].some((opt) => opt.value === statusParam)) {
+            filterStatus.value = statusParam;
+        }
+        if (filterDateEncoded && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+            filterDateEncoded.value = dateParam;
+        }
+
         btnClearFilters?.addEventListener('click', () => {
             if (filterBarangay) filterBarangay.value = '';
             if (filterStatus) filterStatus.value = '';

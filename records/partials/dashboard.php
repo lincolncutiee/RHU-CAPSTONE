@@ -10,6 +10,7 @@ $todayLabel = date('l · M j, Y', strtotime($rd['today']));
 $queueTotal = count($workQueue);
 $needsAction = (int) $stats['draft'] + (int) $stats['returned'] + (int) $stats['rejected'];
 $weeklyMax = max(1, ...array_column($weekly, 'count'));
+$recordsUrl = BASE_URL . '/patient-records.php';
 ?>
 
 <div class="itd-page rcd-page">
@@ -32,32 +33,23 @@ $weeklyMax = max(1, ...array_column($weekly, 'count'));
         <div class="itd-metrics__group">
             <span class="itd-metrics__label">Needs your action</span>
             <div class="row g-2 itd-stats">
-                <div class="col-4">
-                    <div class="itd-stat-card itd-stat-card--returned">
+                <div class="col-6">
+                    <a class="itd-stat-card itd-stat-card--returned" href="<?= htmlspecialchars($recordsUrl . '?status=' . rawurlencode(WORKFLOW_RETURNED_FOR_CORRECTION)) ?>">
                         <div class="itd-stat-icon"><i class="bi bi-arrow-return-left"></i></div>
                         <div class="itd-stat-body">
                             <span class="itd-stat-value"><?= (int) $stats['returned'] ?></span>
                             <span class="itd-stat-label">Returned</span>
                         </div>
-                    </div>
+                    </a>
                 </div>
-                <div class="col-4">
-                    <div class="itd-stat-card itd-stat-card--draft rcd-stat-card--draft">
+                <div class="col-6">
+                    <a class="itd-stat-card itd-stat-card--draft rcd-stat-card--draft" href="<?= htmlspecialchars($recordsUrl . '?status=' . rawurlencode(WORKFLOW_DRAFT)) ?>">
                         <div class="itd-stat-icon"><i class="bi bi-file-earmark"></i></div>
                         <div class="itd-stat-body">
                             <span class="itd-stat-value"><?= (int) $stats['draft'] ?></span>
                             <span class="itd-stat-label">Draft</span>
                         </div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="itd-stat-card itd-stat-card--pending">
-                        <div class="itd-stat-icon"><i class="bi bi-x-circle"></i></div>
-                        <div class="itd-stat-body">
-                            <span class="itd-stat-value"><?= (int) $stats['rejected'] ?></span>
-                            <span class="itd-stat-label">Rejected</span>
-                        </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -65,22 +57,22 @@ $weeklyMax = max(1, ...array_column($weekly, 'count'));
             <span class="itd-metrics__label">Output &amp; pipeline</span>
             <div class="row g-2 itd-stats">
                 <div class="col-6">
-                    <div class="itd-stat-card itd-stat-card--validated">
+                    <a class="itd-stat-card itd-stat-card--validated" href="<?= htmlspecialchars($recordsUrl . '?date=' . rawurlencode((string) $rd['today'])) ?>">
                         <div class="itd-stat-icon"><i class="bi bi-person-plus"></i></div>
                         <div class="itd-stat-body">
                             <span class="itd-stat-value"><?= (int) $stats['encoded_today'] ?></span>
                             <span class="itd-stat-label">Encoded today</span>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <div class="col-6">
-                    <div class="itd-stat-card itd-stat-card--ready">
+                    <a class="itd-stat-card itd-stat-card--ready" href="<?= htmlspecialchars($recordsUrl . '?status=' . rawurlencode(WORKFLOW_WAITING_FOR_DOCTOR)) ?>">
                         <div class="itd-stat-icon"><i class="bi bi-clipboard2-pulse"></i></div>
                         <div class="itd-stat-body">
                             <span class="itd-stat-value"><?= (int) $stats['waiting_for_doctor'] ?></span>
                             <span class="itd-stat-label">Waiting for Doctor</span>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>

@@ -94,5 +94,5 @@ return [
         'epress_feedback_pin',
     ],
 
-    'required_for_create' => ['last_name', 'first_name', 'sex', 'birth_date'],
+    'required_for_create' => [],
 ];

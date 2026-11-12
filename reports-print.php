@@ -21,7 +21,8 @@ $filters = ReportFilters::fromRequest(
 );
 
 $conn = getDBConnection();
-$report = Reports::build($conn, $fromInput, $toInput, $filters);
+$forecastDays = (int) ($_GET['forecast_days'] ?? 7);
+$report = Reports::build($conn, $fromInput, $toInput, $filters, $forecastDays === 14 ? 14 : 7);
 $conn->close();
 
 $branding = FormTemplate::branding();
@@ -186,14 +187,14 @@ $autoPrint = !isset($_GET['preview']) || $_GET['preview'] !== '1';
                 <?php if ($forecastRows !== []): ?>
                     <h3 class="rpt-print-h3">Forecast</h3>
                     <table class="rpt-print-legend rpt-print-legend--compact rpt-print-forecast">
-                        <thead><tr><th>Disease</th><th class="text-end">Last 14d</th><th>Trend</th><th class="text-end">Projected</th></tr></thead>
+                        <thead><tr><th>Disease</th><th class="text-end">Last 7d</th><th>Trend</th><th class="text-end">Projected</th></tr></thead>
                         <tbody>
                             <?php foreach ($forecastRows as $row): ?>
                                 <tr>
                                     <td><?= htmlspecialchars((string) $row['disease']) ?></td>
-                                    <td class="text-end"><?= (int) ($row['recent_14'] ?? 0) ?></td>
-                                    <td><?= htmlspecialchars((string) ($row['trend_label'] ?? '')) ?></td>
-                                    <td class="text-end">~<?= (int) ($row['projected_mid'] ?? 0) ?></td>
+                                    <td class="text-end"><?= (int) ($row['recent_7'] ?? $row['recent_14'] ?? 0) ?></td>
+                                    <td><?= htmlspecialchars((string) ($row['alert_label'] ?? $row['trend_label'] ?? '')) ?></td>
+                                    <td class="text-end"><?= $row['projected_mid'] === null ? 'Not estimated' : '~' . (int) $row['projected_mid'] ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

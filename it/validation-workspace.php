@@ -46,12 +46,25 @@ $consultDate = !empty($treatment['date_of_consultation'])
     ? date('M d, Y', strtotime($treatment['date_of_consultation']))
     : '—';
 
+$roleLabels = [
+    ROLE_RECORDS => 'Encoder',
+    ROLE_IT => 'IT Staff',
+    ROLE_RECEPTIONIST => 'Receptionist',
+    ROLE_DOCTOR => 'Doctor',
+];
+
 $encodedBy = '—';
+$encoderReturn = [
+    'userId' => null,
+    'fullName' => null,
+    'username' => null,
+    'roleLabel' => null,
+];
 $conn = getDBConnection();
 if (!empty($patient['encoded_by'])) {
     $uid = (int) $patient['encoded_by'];
     $stmt = $conn->prepare(
-        'SELECT u.full_name, r.slug AS role
+        'SELECT u.full_name, u.username, r.slug AS role
          FROM users u
          LEFT JOIN roles r ON r.id = u.role_id
          WHERE u.id = ?'
@@ -60,7 +73,16 @@ if (!empty($patient['encoded_by'])) {
     $stmt->execute();
     $urow = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $encodedBy = $urow['full_name'] ?? '—';
+    if ($urow) {
+        $encodedBy = $urow['full_name'] ?? '—';
+        $roleSlug = $urow['role'] ?? '';
+        $encoderReturn = [
+            'userId' => $uid,
+            'fullName' => $urow['full_name'] ?? '',
+            'username' => $urow['username'] ?? '',
+            'roleLabel' => $roleLabels[$roleSlug] ?? ($roleSlug ?: 'Encoder'),
+        ];
+    }
 }
 
 $audit = [];
@@ -78,6 +100,54 @@ $stmt->bind_param('i', $patientId);
 $stmt->execute();
 $audit = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+$returnRoleLabels = [
+    ROLE_RECORDS          => 'Records Office',
+    ROLE_DOCTOR           => 'Doctor',
+    ROLE_PHARMACY         => 'Pharmacy',
+    ROLE_IT               => 'IT Department',
+    ROLE_SYSTEM_ADMIN     => 'System Administrator',
+    ROLE_RECEPTIONIST     => 'Receptionist',
+];
+$returnRoleOrder = [
+    'Records Office',
+    'Doctor',
+    'Pharmacy',
+    'IT Department',
+    'Receptionist',
+    'System Administrator',
+];
+
+$returnToUsers = [];
+$stmt = $conn->prepare(
+    'SELECT u.id, u.full_name, u.username, r.slug AS role_slug, r.name AS role_name
+     FROM users u
+     INNER JOIN roles r ON r.id = u.role_id
+     WHERE u.is_active = 1
+     ORDER BY u.full_name ASC'
+);
+$stmt->execute();
+$returnToUsers = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+$returnToUsersByRole = [];
+foreach ($returnToUsers as $u) {
+    $slug = (string) ($u['role_slug'] ?? '');
+    $group = $returnRoleLabels[$slug] ?? trim((string) ($u['role_name'] ?? $slug ?: 'Staff'));
+    $returnToUsersByRole[$group][] = $u;
+}
+uksort($returnToUsersByRole, static function (string $a, string $b) use ($returnRoleOrder): int {
+    $ia = array_search($a, $returnRoleOrder, true);
+    $ib = array_search($b, $returnRoleOrder, true);
+    $ia = $ia === false ? 999 : $ia;
+    $ib = $ib === false ? 999 : $ib;
+    if ($ia === $ib) {
+        return strcasecmp($a, $b);
+    }
+
+    return $ia <=> $ib;
+});
+
 $conn->close();
 
 $documents = [
@@ -99,13 +169,6 @@ $hasConsultData = !empty($treatment['id']);
 $formsReady = $hasCorePatient && $hasConsultData;
 $formCount = count($documents);
 
-$roleLabels = [
-    ROLE_RECORDS => 'Encoder',
-    ROLE_IT => 'IT Staff',
-    ROLE_RECEPTIONIST => 'Receptionist',
-    ROLE_DOCTOR => 'Doctor',
-];
-
 $pageTitle = 'IT Validation Workspace';
 $pageSubtitle = 'Review and validate consultation forms before sending to Print Queue';
 $hidePageTitleBar = true;
@@ -126,14 +189,14 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="itv-dms" id="itValidationWorkspace">
   <header class="itv-dms-header">
     <a href="<?= BASE_URL ?>/validation-status.php" class="itv-back-link">
-      <i class="bi bi-arrow-left"></i> Back to IT Review Queue
+      <i class="bi bi-arrow-left"></i> Back to Review Queue
     </a>
     <div class="itv-dms-title-row">
       <div>
         <h1 class="itv-title">IT Validation Workspace</h1>
         <p class="itv-subtitle mb-0">Review and validate consultation forms before sending to Print Queue</p>
       </div>
-      <?= WorkflowStatus::badgeHtml($patient['status'], 'Pending IT Validation') ?>
+      <?= WorkflowStatus::badgeHtml($patient['status'], 'Pending Validation') ?>
     </div>
   </header>
 
@@ -167,16 +230,16 @@ require_once __DIR__ . '/../includes/header.php';
       <span class="itv-doc-status-heading">Document Validation Summary</span>
       <ul class="itv-chip-list">
         <?php foreach ($documents as $doc): ?>
-          <li class="itv-chip is-ok" data-form="<?= htmlspecialchars($doc['id']) ?>">
-            <i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($doc['short']) ?>
+          <li class="itv-chip is-pending" data-form="<?= htmlspecialchars($doc['id']) ?>">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i> <?= htmlspecialchars($doc['short']) ?>
           </li>
         <?php endforeach; ?>
       </ul>
     </div>
     <div class="itv-doc-status-right">
       <span class="itv-label">Overall Completion</span>
-      <strong class="itv-pct is-ready">100%</strong>
-      <span class="itv-ready-text"><?= $formsReady ? 'Forms Ready for Review' : 'Review patient data carefully' ?></span>
+      <strong class="itv-pct" id="itvCompletionPct">—</strong>
+      <span class="itv-ready-text" id="itvReadyText">Checking required fields…</span>
     </div>
   </section>
 
@@ -195,7 +258,7 @@ require_once __DIR__ . '/../includes/header.php';
                   title="<?= htmlspecialchars($doc['label']) ?>">
             <span class="itv-folder-icon"><i class="bi bi-file-earmark-text"></i></span>
             <span class="itv-folder-label"><?= htmlspecialchars($doc['title']) ?></span>
-            <span class="itv-folder-status" title="Available for review"><i class="bi bi-check-circle-fill"></i></span>
+            <span class="itv-folder-status" title="Checking…" aria-hidden="true"><i class="bi bi-dash-circle"></i></span>
           </button>
         <?php endforeach; ?>
       </nav>
@@ -224,6 +287,14 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
       </div>
 
+      <div id="itvIssuesPanel" class="itv-issues-panel d-none" role="region" aria-live="polite" aria-label="Missing required fields">
+        <div class="itv-issues-head">
+          <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+          <span class="itv-issues-title">Missing information on this form</span>
+        </div>
+        <ul id="itvIssuesList" class="itv-issues-list mb-0"></ul>
+      </div>
+
       <div class="itv-viewer-stage" id="itvViewerStage">
         <div class="itv-viewer-canvas" id="itvViewerCanvas">
           <?php
@@ -247,12 +318,12 @@ require_once __DIR__ . '/../includes/header.php';
     <aside class="itv-action-panel">
       <section class="itv-remarks-card">
         <h2 class="itv-panel-title">Validation Remarks</h2>
-        <label class="itv-label" for="itvRemarks">Remarks (optional)</label>
+        <label class="itv-label" for="itvRemarks">Remarks (optional for approve)</label>
         <textarea id="itvRemarks"
                   class="form-control itv-remarks-input"
                   maxlength="500"
                   rows="6"
-                  placeholder="Add remarks if there are incomplete information or corrections needed…"></textarea>
+                  placeholder="Optional notes for approval. Kung Return for Correction, ang reason ibutang sa dialog…"></textarea>
         <div class="itv-char-count"><span id="itvRemarkCount">0</span>/500</div>
       </section>
 
@@ -318,6 +389,112 @@ require_once __DIR__ . '/../includes/header.php';
   </section>
 </div>
 
+<?php
+$returnPatientName = trim((string) ($summary['full_name'] ?? ''));
+$returnPin = trim((string) ($summary['patient_id'] ?? ''));
+$defaultReturnUserId = (int) ($patient['encoded_by'] ?? 0);
+if ($defaultReturnUserId <= 0 && !empty($returnToUsers)) {
+    $defaultReturnUserId = (int) $returnToUsers[0]['id'];
+}
+$nameInitial = $returnPatientName !== ''
+    ? strtoupper(substr($returnPatientName, 0, 1))
+    : '?';
+?>
+
+<!-- Return for Correction (Bootstrap modal — full layout control) -->
+<div class="modal fade" id="itvReturnModal" tabindex="-1" aria-labelledby="itvReturnModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered itv-return-dialog">
+    <div class="modal-content itv-return-shell border-0 shadow-lg">
+      <div class="itv-return-shell-accent" aria-hidden="true"></div>
+
+      <div class="modal-header itv-return-shell-header border-0 pb-0">
+        <div class="itv-return-shell-brand">
+          <div class="itv-return-shell-icon" aria-hidden="true">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </div>
+          <div>
+            <h2 class="modal-title itv-return-shell-title" id="itvReturnModalTitle">Return for Correction</h2>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body itv-return-shell-body pt-3">
+        <?php if ($returnPin !== '' || $returnPatientName !== ''): ?>
+          <div class="itv-return-patient" role="group" aria-label="Patient">
+            <div class="itv-return-patient-avatar" aria-hidden="true"><?= htmlspecialchars($nameInitial) ?></div>
+            <div class="itv-return-patient-text">
+              <?php if ($returnPatientName !== ''): ?>
+                <div class="itv-return-patient-name"><?= htmlspecialchars($returnPatientName) ?></div>
+              <?php endif; ?>
+              <?php if ($returnPin !== ''): ?>
+                <div class="itv-return-patient-pin">
+                  <span class="itv-return-patient-pin-label">PIN</span>
+                  <code class="itv-return-patient-pin-value"><?= htmlspecialchars($returnPin) ?></code>
+                </div>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <div id="itvReturnError" class="alert alert-danger py-2 px-3 small mb-3 d-none" role="alert"></div>
+
+        <div class="mb-3">
+          <label class="form-label itv-return-label" for="itvReturnToUser">
+            <i class="bi bi-person-badge me-1" aria-hidden="true"></i>Return to
+            <span class="text-muted fw-normal">(any active user)</span>
+          </label>
+          <select id="itvReturnToUser" class="form-select form-select-lg itv-return-control" required>
+            <?php if (empty($returnToUsers)): ?>
+              <option value="">— Walay active users —</option>
+            <?php else: ?>
+              <?php foreach ($returnToUsersByRole as $groupLabel => $groupUsers): ?>
+                <optgroup label="<?= htmlspecialchars($groupLabel) ?>">
+                  <?php foreach ($groupUsers as $u): ?>
+                    <option value="<?= (int) $u['id'] ?>"<?= (int) $u['id'] === $defaultReturnUserId ? ' selected' : '' ?>>
+                      <?= htmlspecialchars($u['full_name']) ?> (@<?= htmlspecialchars($u['username']) ?>)
+                    </option>
+                  <?php endforeach; ?>
+                </optgroup>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </div>
+
+        <div class="mb-0">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+            <label class="form-label itv-return-label mb-0" for="itvReturnReason">
+              <i class="bi bi-chat-left-text me-1" aria-hidden="true"></i>Reason for returning
+              <span class="badge text-bg-danger-subtle text-danger ms-1">Required</span>
+            </label>
+            <span class="itv-return-counter text-muted"><span id="itvReturnReasonCount">0</span> / 500</span>
+          </div>
+          <textarea id="itvReturnReason"
+                    class="form-control itv-return-control itv-return-textarea"
+                    rows="5"
+                    maxlength="500"
+                    required></textarea>
+        </div>
+
+        <div class="itv-return-footnote mt-3">
+          <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+          <span>
+            Mobiya sa <strong>Review Queue</strong> · status <strong>Returned for Correction</strong>.
+            Ang napili makadawat og notification uban sa imong reason ug link sa encoding form.
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-footer itv-return-shell-footer border-0 pt-0">
+        <button type="button" class="btn btn-light itv-return-btn-cancel" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning itv-return-btn-submit" id="itvReturnSubmit">
+          <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Return for Correction
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Full-screen document preview overlay -->
 <div class="itv-fs-overlay" id="itvFsOverlay" hidden>
   <div class="itv-fs-toolbar">
@@ -338,6 +515,9 @@ window.IT_VALIDATION = {
   patient: <?= json_encode($patient, JSON_UNESCAPED_UNICODE) ?>,
   treatment: <?= json_encode($treatment, JSON_UNESCAPED_UNICODE) ?>,
   extended: <?= json_encode($extended, JSON_UNESCAPED_UNICODE) ?>,
+  patientPin: <?= json_encode($summary['patient_id'] ?? '') ?>,
+  encoderReturn: <?= json_encode($encoderReturn, JSON_UNESCAPED_UNICODE) ?>,
+  returnToUsers: <?= json_encode($returnToUsers, JSON_UNESCAPED_UNICODE) ?>,
 };
 </script>
 

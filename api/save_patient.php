@@ -165,7 +165,6 @@ try {
 
         // Reject free-typed diagnosis lines that are not in diagnosis_master
         $postedDxLines = ClinicalMaster::splitLines($post['diagnosis'] ?? '');
-        $postedMedLines = ClinicalMaster::splitLines($post['medication_treatment'] ?? '');
         if (array_key_exists('diagnosis_ids', $post) || array_key_exists('diagnosis', $post)) {
             $badDx = ClinicalMaster::unresolvedDiagnosisLines($conn, $post);
             if ($badDx !== []) {
@@ -183,21 +182,11 @@ try {
                 throw new Exception('One or more diagnoses are invalid. Please choose from the suggestion list.');
             }
         }
+        // Medications: free-typed lines are allowed (auto-saved into medication_master).
+        // Suggestion list remains available for official names.
         if (
             array_key_exists('medication_ids', $post) || array_key_exists('medication_treatment', $post)
         ) {
-            $badMed = ClinicalMaster::unresolvedMedicationLines($conn, $post);
-            if ($badMed !== []) {
-                throw new Exception(
-                    'Each medication line must match an official medication from the master list. Invalid: '
-                    . implode('; ', array_slice($badMed, 0, 3))
-                );
-            }
-            if ($postedMedLines !== [] && $medicationIds === []) {
-                throw new Exception(
-                    'Medication must match the medication master list.'
-                );
-            }
             if (!ClinicalMaster::validateMedicationIds($conn, $medicationIds)) {
                 throw new Exception('One or more medications are invalid. Please choose from the suggestion list.');
             }

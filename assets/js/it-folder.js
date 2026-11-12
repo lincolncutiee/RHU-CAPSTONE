@@ -93,7 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const check = await fetch(`${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${cfg.patientDbId}`);
+            const check = await fetch(
+                `${cfg.baseUrl}/api/check_form_completeness.php?patient_id=${cfg.patientDbId}&scope=submit`
+            );
             const checkData = await check.json();
             if (!checkData.success) throw new Error(checkData.message);
 

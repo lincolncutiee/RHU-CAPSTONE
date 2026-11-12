@@ -66,6 +66,24 @@ class AdminInstall
         $conn->query('INSERT IGNORE INTO system_branding (id) VALUES (1)');
 
         $conn->query(
+            "CREATE TABLE IF NOT EXISTS access_logs (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                event ENUM('login','failed','logout') NOT NULL,
+                user_id INT DEFAULT NULL,
+                username VARCHAR(80) NOT NULL DEFAULT '',
+                role_slug VARCHAR(64) DEFAULT NULL,
+                role_name VARCHAR(80) DEFAULT NULL,
+                reason VARCHAR(40) DEFAULT NULL,
+                ip_address VARCHAR(45) DEFAULT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_access_created (created_at),
+                INDEX idx_access_event (event),
+                INDEX idx_access_role (role_slug),
+                CONSTRAINT fk_access_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB"
+        );
+
+        $conn->query(
             "CREATE TABLE IF NOT EXISTS admin_audit_log (
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
                 actor_user_id INT NOT NULL,
