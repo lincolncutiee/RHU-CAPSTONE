@@ -62,6 +62,28 @@ include __DIR__ . '/../includes/header.php';
                                 <label class="form-label" for="adminFacilityName"><i class="bi bi-building admin-field-icon" aria-hidden="true"></i> Facility name (forms / headers)</label>
                                 <input type="text" class="form-control" id="adminFacilityName" placeholder="Name on printed forms">
                             </div>
+
+                            <div class="mb-4 admin-form-style-block">
+                                <p class="admin-branding-section-label mb-2">Form display style (encoding screen)</p>
+                                <p class="text-muted small mb-2">System-wide. Print output always uses the official paper layout.</p>
+                                <div class="admin-form-style-choices" role="radiogroup" aria-label="Form display style">
+                                    <label class="admin-form-style-choice">
+                                        <input type="radio" name="form_display_style" id="adminFormStyleOfficial" value="official" checked>
+                                        <span class="admin-form-style-body">
+                                            <strong>A. Current official paper form</strong>
+                                            <span class="d-block text-muted small">Dense paper-like layout (default). Remains an option.</span>
+                                        </span>
+                                    </label>
+                                    <label class="admin-form-style-choice">
+                                        <input type="radio" name="form_display_style" id="adminFormStyleClean" value="clean">
+                                        <span class="admin-form-style-body">
+                                            <strong>B. Clean guided form</strong>
+                                            <span class="d-block text-muted small">Same 7 Official RHU Forms — clearer spaced encoding with section steps.</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="admin-topnav-preview-wrap" aria-live="polite">
                                 <p class="admin-branding-preview-label">Live preview — top bar</p>
                                 <div class="admin-topnav-preview">

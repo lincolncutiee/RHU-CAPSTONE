@@ -63,15 +63,19 @@ class FormRenderer
     public static function renderPage(array $page, string $role, bool $lockRecords = false): string
     {
         require_once __DIR__ . '/PaperFormRenderer.php';
+        require_once __DIR__ . '/CleanFormRenderer.php';
 
         $pageId = $page['id'] ?? '';
         self::$renderPageId = $pageId;
         $paperPath = __DIR__ . '/../forms/paper/' . $pageId . '.php';
         if (file_exists($paperPath) && empty($page['is_review'])) {
+            $useClean = FormTemplate::isCleanFormDisplay();
             ob_start();
             ?>
-            <div class="wizard-page-shell" data-page-id="<?= htmlspecialchars($pageId) ?>">
-                <?= PaperFormRenderer::renderPage($pageId, $role, $lockRecords) ?>
+            <div class="wizard-page-shell<?= $useClean ? ' wizard-page-shell--clean' : '' ?>" data-page-id="<?= htmlspecialchars($pageId) ?>">
+                <?= $useClean
+                    ? CleanFormRenderer::renderPage($pageId, $role, $lockRecords)
+                    : PaperFormRenderer::renderPage($pageId, $role, $lockRecords) ?>
             </div>
             <?php
             return ob_get_clean();

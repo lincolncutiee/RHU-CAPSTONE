@@ -23,6 +23,7 @@ $pendingAliases = WorkflowStatus::pendingItAliases();
 $queueStatuses = array_values(array_unique(array_merge(
     $pendingAliases,
     [
+        WORKFLOW_DRAFT,
         WORKFLOW_READY_FOR_PRINT,
         WORKFLOW_RETURNED_FOR_CORRECTION,
         WORKFLOW_PRINTED,
@@ -45,11 +46,13 @@ $sql = "SELECT p.id, p.patient_id, p.first_name, p.middle_name, p.last_name, p.s
           AND p.status IN ($placeholders)
         ORDER BY
             CASE
-                WHEN p.status IN ('" . implode("','", array_map(static fn($s) => $conn->real_escape_string($s), $pendingAliases)) . "') THEN 0
-                WHEN p.status = '" . $conn->real_escape_string(WORKFLOW_RETURNED_FOR_CORRECTION) . "' THEN 1
-                WHEN p.status = '" . $conn->real_escape_string(WORKFLOW_READY_FOR_PRINT) . "' THEN 2
-                ELSE 3
+                WHEN p.status = '" . $conn->real_escape_string(WORKFLOW_DRAFT) . "' THEN 0
+                WHEN p.status IN ('" . implode("','", array_map(static fn($s) => $conn->real_escape_string($s), $pendingAliases)) . "') THEN 1
+                WHEN p.status = '" . $conn->real_escape_string(WORKFLOW_RETURNED_FOR_CORRECTION) . "' THEN 2
+                WHEN p.status = '" . $conn->real_escape_string(WORKFLOW_READY_FOR_PRINT) . "' THEN 3
+                ELSE 4
             END,
+            CASE WHEN p.status = '" . $conn->real_escape_string(WORKFLOW_DRAFT) . "' THEN p.updated_at END DESC,
             p.date_encoded ASC";
 
 $stmt = $conn->prepare($sql);
@@ -103,13 +106,18 @@ $submitters = [];
 $rows = [];
 foreach ($records as $r) {
     $name = ItPrintForms::formatPatientName($r);
-    $status = $r['status'];
+    $status = WorkflowStatus::normalize((string) ($r['status'] ?? ''));
+    $isDraft = $status === WORKFLOW_DRAFT;
     $isPending = WorkflowStatus::isPendingItValidation($status);
     $isReturned = $status === WORKFLOW_RETURNED_FOR_CORRECTION;
     $isApproved = $status === WORKFLOW_READY_FOR_PRINT;
     $isPrinted = $status === WORKFLOW_PRINTED;
 
-    if ($isPending) {
+    if ($isDraft) {
+        $badgeLabel = 'Draft';
+        $badgeClass = 'draft';
+        $action = 'encode';
+    } elseif ($isPending) {
         $badgeLabel = 'Pending Validation';
         $badgeClass = 'pending';
         $action = 'review';
@@ -128,6 +136,7 @@ foreach ($records as $r) {
     }
 
     $cid = (int) ($r['consultation_id'] ?? 0);
+    $encodeUrl = BASE_URL . '/forms/doh-form.php?id=' . (int) $r['id'];
     $reviewUrl = BASE_URL . '/it/validation-workspace.php?id=' . (int) $r['id']
         . ($cid > 0 ? '&consultation=' . $cid : '');
     $viewUrl = BASE_URL . '/patient-folder.php?id=' . (int) $r['id'];
@@ -158,7 +167,9 @@ foreach ($records as $r) {
         'badge_label'       => $badgeLabel,
         'badge_class'       => $badgeClass,
         'action'            => $action,
-        'action_url'        => $action === 'review' ? $reviewUrl : $viewUrl,
+        'action_url'        => $action === 'encode'
+            ? $encodeUrl
+            : ($action === 'review' ? $reviewUrl : $viewUrl),
         'folder_url'        => $viewUrl,
     ];
 }
@@ -198,6 +209,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <select id="itqStatus" aria-label="Status">
             <option value="">Status</option>
+            <option value="draft">Draft</option>
             <option value="pending">Pending Validation</option>
             <option value="approved">Approved</option>
             <option value="returned">Returned</option>
@@ -266,7 +278,11 @@ require_once __DIR__ . '/includes/header.php';
                                     </span>
                                 </td>
                                 <td class="wl-actions">
-                                    <?php if ($row['action'] === 'review'): ?>
+                                    <?php if ($row['action'] === 'encode'): ?>
+                                        <a class="wl-btn wl-btn-secondary" href="<?= htmlspecialchars($row['action_url']) ?>">
+                                            <i class="bi bi-pencil-square"></i> Continue
+                                        </a>
+                                    <?php elseif ($row['action'] === 'review'): ?>
                                         <a class="wl-btn wl-btn-primary" href="<?= htmlspecialchars($row['action_url']) ?>">
                                             <i class="bi bi-eye"></i> Review
                                         </a>

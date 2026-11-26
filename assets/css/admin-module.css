@@ -1386,3 +1386,34 @@ body.admin-form-zoom-open {
     margin: 0 0 1rem;
     color: #334155;
 }
+
+/* Form display style (Admin → Form & logo) */
+.admin-form-style-choices {
+    display: grid;
+    gap: 0.55rem;
+}
+.admin-form-style-choice {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.85rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0.65rem;
+    background: #fff;
+    cursor: pointer;
+    margin: 0;
+}
+.admin-form-style-choice input {
+    margin-top: 0.2rem;
+    accent-color: #1a6fc4;
+}
+.admin-form-style-choice.is-active,
+.admin-form-style-choice:has(input:checked) {
+    border-color: #1a6fc4;
+    background: #f0f7ff;
+}
+.admin-form-style-body strong {
+    display: block;
+    font-size: 0.92rem;
+    color: #0f172a;
+}

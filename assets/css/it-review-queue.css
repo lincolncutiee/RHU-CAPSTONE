@@ -259,6 +259,7 @@
     background: currentColor;
 }
 
+.wl-badge--draft { background: #f1f5f9; color: #475569; }
 .wl-badge--pending { background: #ffedd5; color: #9a3412; }
 .wl-badge--approved { background: #dcfce7; color: #166534; }
 .wl-badge--returned { background: #fee2e2; color: #991b1b; }

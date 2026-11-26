@@ -21,6 +21,14 @@
         ['adminSiteTitle', 'adminSiteSubtitle', 'adminFacilityName'].forEach((id) => {
             document.getElementById(id)?.addEventListener('input', updateBrandingPreview);
         });
+        document.querySelectorAll('input[name="form_display_style"]').forEach((input) => {
+            input.addEventListener('change', () => {
+                document.querySelectorAll('.admin-form-style-choice').forEach((el) => {
+                    const radio = el.querySelector('input[type="radio"]');
+                    el.classList.toggle('is-active', Boolean(radio?.checked));
+                });
+            });
+        });
         document.getElementById('adminReloadStrings')?.addEventListener('click', loadStrings);
         document.getElementById('adminStringSearch')?.addEventListener('input', debounce(loadStrings, 350));
         document.getElementById('adminStringPrefix')?.addEventListener('change', loadStrings);
@@ -95,6 +103,15 @@
         document.getElementById('adminSiteSubtitle').value = b.site_subtitle || '';
         document.getElementById('adminFacilityName').value = b.facility_name || '';
         document.getElementById('adminLogoPath').value = b.logo_path || '';
+        const style = (b.form_display_style || 'official') === 'clean' ? 'clean' : 'official';
+        const official = document.getElementById('adminFormStyleOfficial');
+        const clean = document.getElementById('adminFormStyleClean');
+        if (official) official.checked = style === 'official';
+        if (clean) clean.checked = style === 'clean';
+        document.querySelectorAll('.admin-form-style-choice').forEach((el) => {
+            const input = el.querySelector('input[type="radio"]');
+            el.classList.toggle('is-active', Boolean(input?.checked));
+        });
         const preview = document.getElementById('adminLogoPreview');
         if (preview) {
             preview.src = logoUrlFromPath(b.logo_path);
@@ -328,6 +345,8 @@
         body.append('site_subtitle', document.getElementById('adminSiteSubtitle').value);
         body.append('facility_name', document.getElementById('adminFacilityName').value);
         body.append('logo_path', document.getElementById('adminLogoPath').value);
+        const styleInput = document.querySelector('input[name="form_display_style"]:checked');
+        body.append('form_display_style', styleInput?.value || 'official');
         body.append('admin_password', document.getElementById('adminBrandingPassword').value);
         const res = await fetch(cfg.apiUrl, { method: 'POST', body });
         const data = await res.json();

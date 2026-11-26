@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../core/Permissions.php';
+require_once __DIR__ . '/../core/FormTemplate.php';
 
 $user      = currentUser();
 $roleRaw   = (string) ($user['role'] ?? '');
@@ -58,15 +59,24 @@ $activePage   = $isDoctorViewOnly ? 'records' : 'encoding';
 $hidePageTitleBar = true;
 $hidePatientSearch = true;
 
+$formDisplayStyle = FormTemplate::formDisplayStyle();
+$isCleanFormDisplay = $formDisplayStyle === 'clean';
+
 $extraCSS = [
     BASE_URL . '/assets/css/doh-form.css',
     BASE_URL . '/assets/css/paper-form.css?v=' . (int) @filemtime(__DIR__ . '/../assets/css/paper-form.css'),
     BASE_URL . '/assets/css/form-wizard.css?v=' . (int) @filemtime(__DIR__ . '/../assets/css/form-wizard.css'),
 ];
+if ($isCleanFormDisplay) {
+    $extraCSS[] = BASE_URL . '/assets/css/clean-form-guide.css?v=' . ((int) @filemtime(__DIR__ . '/../assets/css/clean-form-guide.css') ?: 1);
+}
 $extraJS = [
     BASE_URL . '/assets/js/patient-profile-sync.js?v=' . ((int) @filemtime(__DIR__ . '/../assets/js/patient-profile-sync.js') ?: 1),
     BASE_URL . '/assets/js/form-wizard.js?v=' . ((int) @filemtime(__DIR__ . '/../assets/js/form-wizard.js') ?: 1),
 ];
+if ($isCleanFormDisplay) {
+    $extraJS[] = BASE_URL . '/assets/js/clean-form-guide.js?v=' . ((int) @filemtime(__DIR__ . '/../assets/js/clean-form-guide.js') ?: 1);
+}
 
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../core/Workflow.php';
@@ -269,7 +279,7 @@ foreach ($flatPages as $page) {
 }
 ?>
 
-<div class="emr-encoding emr-encoding--focused" id="emrEncodingRoot">
+<div class="emr-encoding emr-encoding--focused<?= $isCleanFormDisplay ? ' emr-encoding--clean' : '' ?>" id="emrEncodingRoot" data-form-display-style="<?= htmlspecialchars($formDisplayStyle) ?>">
   <?php if (!$isDoctorViewOnly && ($waitingForDoctor || $lockRecordsFields)): ?>
   <div class="emr-encoding-status-bar" id="encodingStatusBar">
     <?= WorkflowStatus::badgeHtml($patientStatus) ?>
@@ -475,6 +485,7 @@ window.RHU_FORM = {
         'epress' => 'epress',
     ]) ?>,
     completenessRules: <?= json_encode(require __DIR__ . '/../config/form-completeness.php') ?>,
+    formDisplayStyle: <?= json_encode($formDisplayStyle) ?>,
 };
 </script>
 

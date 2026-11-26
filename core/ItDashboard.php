@@ -21,6 +21,7 @@ class ItDashboard
         return array_values(array_unique(array_merge(
             WorkflowStatus::pendingItAliases(),
             [
+                WORKFLOW_DRAFT,
                 WORKFLOW_RETURNED_FOR_CORRECTION,
                 WORKFLOW_READY_FOR_PRINT,
             ]
@@ -72,6 +73,11 @@ class ItDashboard
             }
         }
         foreach ($rows as $row) {
+            if (($row['action'] ?? '') === 'encode') {
+                return $row;
+            }
+        }
+        foreach ($rows as $row) {
             if (($row['action'] ?? '') === 'print') {
                 return $row;
             }
@@ -79,7 +85,7 @@ class ItDashboard
         return null;
     }
 
-    /** @return array{pending_validation:int,ready_to_print:int,returned:int,validated_today:int,printed_today:int,queue_today:int} */
+    /** @return array{pending_validation:int,ready_to_print:int,returned:int,drafts:int,validated_today:int,printed_today:int,queue_today:int} */
     private static function stats(mysqli $conn, string $today): array
     {
         $pendingAliases = WorkflowStatus::pendingItAliases();
@@ -90,6 +96,7 @@ class ItDashboard
             'pending_validation' => 0,
             'ready_to_print'     => ItPrintForms::readyToPrintCount($conn),
             'returned'           => 0,
+            'drafts'             => 0,
             'validated_today'    => 0,
             'printed_today'      => 0,
             'queue_today'        => 0,
@@ -106,6 +113,13 @@ class ItDashboard
         $st->bind_param('s', $returned);
         $st->execute();
         $stats['returned'] = (int) ($st->get_result()->fetch_assoc()['c'] ?? 0);
+        $st->close();
+
+        $draft = WORKFLOW_DRAFT;
+        $st = $conn->prepare('SELECT COUNT(*) AS c FROM patients WHERE is_archived = 0 AND status = ?');
+        $st->bind_param('s', $draft);
+        $st->execute();
+        $stats['drafts'] = (int) ($st->get_result()->fetch_assoc()['c'] ?? 0);
         $st->close();
 
         $ready = WORKFLOW_READY_FOR_PRINT;
@@ -142,6 +156,7 @@ class ItDashboard
         $types = str_repeat('s', count($queueStatuses));
 
         $orderPending = implode("','", array_map(static fn ($s) => $conn->real_escape_string($s), $pendingAliases));
+        $draftEsc = $conn->real_escape_string(WORKFLOW_DRAFT);
         $returnedEsc = $conn->real_escape_string(WORKFLOW_RETURNED_FOR_CORRECTION);
         $readyEsc = $conn->real_escape_string(WORKFLOW_READY_FOR_PRINT);
 
@@ -155,11 +170,13 @@ class ItDashboard
                 WHERE p.is_archived = 0 AND p.status IN ($placeholders)
                 ORDER BY
                     CASE
-                        WHEN p.status IN ('{$orderPending}') THEN 0
-                        WHEN p.status = '{$returnedEsc}' THEN 1
-                        WHEN p.status = '{$readyEsc}' THEN 2
-                        ELSE 3
+                        WHEN p.status = '{$draftEsc}' THEN 0
+                        WHEN p.status IN ('{$orderPending}') THEN 1
+                        WHEN p.status = '{$returnedEsc}' THEN 2
+                        WHEN p.status = '{$readyEsc}' THEN 3
+                        ELSE 4
                     END,
+                    CASE WHEN p.status = '{$draftEsc}' THEN COALESCE(p.updated_at, p.date_encoded) END DESC,
                     COALESCE(p.updated_at, p.date_encoded) ASC
                 LIMIT {$limit}";
 
@@ -212,15 +229,20 @@ class ItDashboard
     /** @param array<string, mixed> $r */
     private static function mapQueueRow(array $r, string $today): array
     {
-        $status = (string) ($r['status'] ?? '');
+        $status = WorkflowStatus::normalize((string) ($r['status'] ?? ''));
         $touchRaw = $r['updated_at'] ?? $r['date_encoded'] ?? null;
         $touchDate = $touchRaw ? date('Y-m-d', strtotime((string) $touchRaw)) : '';
         $isToday = $touchDate === $today;
+        $isDraft = $status === WORKFLOW_DRAFT;
         $isPending = WorkflowStatus::isPendingItValidation($status);
         $isReturned = $status === WORKFLOW_RETURNED_FOR_CORRECTION;
         $isReady = $status === WORKFLOW_READY_FOR_PRINT;
 
-        if ($isPending) {
+        if ($isDraft) {
+            $badgeLabel = 'Draft';
+            $badgeClass = 'draft';
+            $action = 'encode';
+        } elseif ($isPending) {
             $badgeLabel = 'Pending Validation';
             $badgeClass = 'pending';
             $action = 'review';
@@ -234,17 +256,18 @@ class ItDashboard
             $action = 'print';
         } else {
             $labels = WorkflowStatus::filterOptions();
-            $badgeLabel = $labels[$status] ?? $labels[WorkflowStatus::normalize($status)] ?? $status;
+            $badgeLabel = $labels[$status] ?? $status;
             $badgeClass = 'muted';
             $action = 'view';
         }
 
         $pid = (int) ($r['id'] ?? 0);
         $cid = (int) ($r['consultation_id'] ?? 0);
+        $encodeUrl = BASE_URL . '/forms/doh-form.php?id=' . $pid;
         $reviewUrl = BASE_URL . '/it/validation-workspace.php?id=' . $pid
             . ($cid > 0 ? '&consultation=' . $cid : '');
         $printUrl = BASE_URL . '/it/print-queue.php?patient_id=' . rawurlencode((string) ($r['patient_id'] ?? ''));
-        $primaryUrl = $isReady ? $printUrl : $reviewUrl;
+        $primaryUrl = $isReady ? $printUrl : ($isDraft ? $encodeUrl : $reviewUrl);
 
         $barangay = PatientSearch::extractBarangay($r['residential_address'] ?? null);
 
@@ -263,6 +286,7 @@ class ItDashboard
             'badge_class'      => $badgeClass,
             'action'           => $action,
             'primary_url'      => $primaryUrl,
+            'encode_url'       => $encodeUrl,
             'review_url'       => $reviewUrl,
             'print_url'        => $printUrl,
             'folder_url'       => BASE_URL . '/patient-folder.php?id=' . $pid,

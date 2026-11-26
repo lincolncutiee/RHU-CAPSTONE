@@ -241,8 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         backgroundColor: 'rgba(22, 163, 74, 0.88)',
                         borderColor: '#15803d',
                         borderWidth: 1,
-                        borderRadius: 4,
-                        maxBarThickness: 42,
+                        borderRadius: 3,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.96,
                     },
                     {
                         label: 'Forecasted Cases',
@@ -250,8 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         backgroundColor: 'rgba(234, 88, 12, 0.88)',
                         borderColor: '#c2410c',
                         borderWidth: 1,
-                        borderRadius: 4,
-                        maxBarThickness: 42,
+                        borderRadius: 3,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.96,
                     },
                 ],
             },
@@ -284,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 scales: {
                     x: {
+                        stacked: false,
                         title: {
                             display: true,
                             text: chart.x_axis_label || 'Date',

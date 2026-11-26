@@ -207,15 +207,21 @@ class FormTemplate
             return self::$brandingCache;
         }
         $defaults = [
-            'logo_path'     => '/assets/img/rhu-magallanes-logo.png',
-            'site_title'    => 'RHU Magallanes',
-            'site_subtitle' => 'Agusan del Norte',
-            'facility_name' => 'Rural Health Unit — Magallanes',
+            'logo_path'           => '/assets/img/rhu-magallanes-logo.png',
+            'site_title'          => 'RHU Magallanes',
+            'site_subtitle'       => 'Agusan del Norte',
+            'facility_name'       => 'Rural Health Unit — Magallanes',
+            'form_display_style'  => 'official',
         ];
         try {
             $conn = getDBConnection();
-            AdminInstall::ensureSchema($conn);
-            $brRes = $conn->query('SELECT * FROM system_branding WHERE id = 1 LIMIT 1');
+            // Schema is ensured once in header/auth — skip heavy ensureSchema here for speed
+            $brRes = @$conn->query('SELECT * FROM system_branding WHERE id = 1 LIMIT 1');
+            if (!$brRes) {
+                require_once __DIR__ . '/AdminInstall.php';
+                AdminInstall::ensureSchema($conn);
+                $brRes = $conn->query('SELECT * FROM system_branding WHERE id = 1 LIMIT 1');
+            }
             $row = $brRes ? $brRes->fetch_assoc() : null;
             $conn->close();
             self::$brandingCache = $row ? array_merge($defaults, $row) : $defaults;
@@ -233,6 +239,18 @@ class FormTemplate
             return $path;
         }
         return rtrim(BASE_URL, '/') . '/' . ltrim($path, '/');
+    }
+
+    /** Encoding screen style: official (paper-like) or clean (guided). Print always official. */
+    public static function formDisplayStyle(): string
+    {
+        $style = strtolower(trim((string) (self::branding()['form_display_style'] ?? 'official')));
+        return $style === 'clean' ? 'clean' : 'official';
+    }
+
+    public static function isCleanFormDisplay(): bool
+    {
+        return self::formDisplayStyle() === 'clean';
     }
 
     /** Official RHU / wizard forms for admin catalog (includes Review & Submit). */
@@ -401,14 +419,18 @@ class FormTemplate
         $sub = trim($data['site_subtitle'] ?? '');
         $facility = trim($data['facility_name'] ?? '');
         $logo = trim($data['logo_path'] ?? '');
+        $style = strtolower(trim((string) ($data['form_display_style'] ?? 'official')));
+        if ($style !== 'clean') {
+            $style = 'official';
+        }
 
         $stmt = $conn->prepare(
-            'UPDATE system_branding SET site_title = ?, site_subtitle = ?, facility_name = ?, logo_path = ?, updated_at = NOW(), updated_by = ? WHERE id = 1'
+            'UPDATE system_branding SET site_title = ?, site_subtitle = ?, facility_name = ?, logo_path = ?, form_display_style = ?, updated_at = NOW(), updated_by = ? WHERE id = 1'
         );
         if (!$stmt) {
             throw new RuntimeException('Could not save branding: ' . $conn->error);
         }
-        $stmt->bind_param('ssssi', $title, $sub, $facility, $logo, $actorId);
+        $stmt->bind_param('sssssi', $title, $sub, $facility, $logo, $style, $actorId);
         $stmt->execute();
         $stmt->close();
         self::resetCache();

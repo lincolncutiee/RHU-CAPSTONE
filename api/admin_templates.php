@@ -92,10 +92,11 @@ try {
     if ($action === 'save_branding') {
         adminTplRequirePassword($adminPassword);
         FormTemplate::saveBranding($conn, $actorId, [
-            'site_title'    => $_POST['site_title'] ?? '',
-            'site_subtitle' => $_POST['site_subtitle'] ?? '',
-            'facility_name' => $_POST['facility_name'] ?? '',
-            'logo_path'     => $_POST['logo_path'] ?? FormTemplate::branding()['logo_path'],
+            'site_title'           => $_POST['site_title'] ?? '',
+            'site_subtitle'        => $_POST['site_subtitle'] ?? '',
+            'facility_name'        => $_POST['facility_name'] ?? '',
+            'logo_path'            => $_POST['logo_path'] ?? FormTemplate::branding()['logo_path'],
+            'form_display_style'   => $_POST['form_display_style'] ?? 'official',
         ]);
         echo json_encode(['success' => true, 'branding' => FormTemplate::branding()]);
         $conn->close();

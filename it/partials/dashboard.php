@@ -10,7 +10,10 @@ $printedToday = $itd['printed_today'];
 $action = $itd['primaryAction'];
 $todayLabel = date('l · M j, Y', strtotime($itd['today']));
 $queueTodayCount = (int) ($stats['queue_today'] ?? count($queueToday));
-$openWork = (int) $stats['pending_validation'] + (int) $stats['ready_to_print'] + (int) $stats['returned'];
+$openWork = (int) $stats['pending_validation']
+    + (int) $stats['ready_to_print']
+    + (int) $stats['returned']
+    + (int) ($stats['drafts'] ?? 0);
 ?>
 
 <div class="itd-page">
@@ -99,7 +102,7 @@ $openWork = (int) $stats['pending_validation'] + (int) $stats['ready_to_print'] 
                             <?php endif; ?>
                         </h3>
                         <p class="itd-card__sub">
-                            Review pending records, then release prints
+                            Drafts, pending validation, then release prints
                             <?php if ($queueTodayCount > 0): ?>
                                 · <span class="itd-today-count"><?= $queueTodayCount ?> touched today</span>
                             <?php endif; ?>
@@ -150,6 +153,10 @@ $openWork = (int) $stats['pending_validation'] + (int) $stats['ready_to_print'] 
                                                 <?php if ($row['action'] === 'print'): ?>
                                                     <a href="<?= htmlspecialchars((string) $row['print_url']) ?>" class="btn btn-sm btn-primary itd-row-btn">
                                                         <i class="bi bi-printer"></i><span>Print</span>
+                                                    </a>
+                                                <?php elseif ($row['action'] === 'encode'): ?>
+                                                    <a href="<?= htmlspecialchars((string) ($row['encode_url'] ?? $row['primary_url'])) ?>" class="btn btn-sm btn-outline-secondary itd-row-btn">
+                                                        <i class="bi bi-pencil-square"></i><span>Continue</span>
                                                     </a>
                                                 <?php else: ?>
                                                     <a href="<?= htmlspecialchars((string) $row['review_url']) ?>" class="btn btn-sm btn-outline-primary itd-row-btn">

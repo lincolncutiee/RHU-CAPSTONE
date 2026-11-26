@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mockup — Admin Form Style Choices (RHU Magallanes)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="mock-banner">
+    <strong>MOCKUP ONLY</strong> — dili ni naka-integrate sa RHUWEB system.
+    Para preview sa proposed Admin form-style choices.
+    ·
+    <a href="implement-preview.html" style="color:#9fe0c7;font-weight:700;">Open full design to implement →</a>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>
+        <p class="brand-kicker">RHU Magallanes · Agusan del Norte</p>
+        <h1>Form display styles</h1>
+      </div>
+    </div>
+    <p class="top-note">Plan preview · Current official form remains Choice A</p>
+  </header>
+
+  <main class="layout">
+    <aside class="admin-card">
+      <p class="eyebrow">Admin → Form &amp; logo <span>(proposed)</span></p>
+      <h2>Unsa nga form style ang gamiton?</h2>
+      <p class="lede">System-wide display for encoding screens. Print output does not change.</p>
+
+      <form class="style-form" id="styleForm">
+        <label class="choice is-active" data-style="official">
+          <input type="radio" name="form_style" value="official" checked />
+          <span class="choice-body">
+            <span class="choice-title">A. Current official paper form</span>
+            <span class="choice-desc">Mao ang existing dense paper-like layout. Default. Apil gihapon sa choices.</span>
+          </span>
+        </label>
+
+        <label class="choice" data-style="clean">
+          <input type="radio" name="form_style" value="clean" />
+          <span class="choice-body">
+            <span class="choice-title">B. Clean guided form</span>
+            <span class="choice-desc">Same 7 official form pages (PCSF → EPRESS), mas spaced ug klaro ang encoding — dili bag-ong forms.</span>
+          </span>
+        </label>
+
+        <button type="button" class="btn-save" id="btnSave">Save style (mock)</button>
+        <p class="save-hint" id="saveHint" hidden>Saved locally in this mockup only — wala pa sa real Admin.</p>
+      </form>
+
+      <div class="print-lock">
+        <h3>Print rule</h3>
+        <p>
+          Bisan Clean Guided ang encoding screen,
+          <strong>pag-print = daan nga official paper output</strong>
+          (ITR / enrollment ug uban pang existing print layouts).
+        </p>
+      </div>
+    </aside>
+
+    <section class="preview-pane">
+      <div class="preview-tabs" role="tablist">
+        <button type="button" class="tab is-active" data-panel="screen" role="tab">Screen encoding</button>
+        <button type="button" class="tab" data-panel="print" role="tab">Print output (unchanged)</button>
+      </div>
+
+      <!-- SCREEN: Official (current-like dense) -->
+      <div class="panel panel-screen" id="panelOfficial" data-style-panel="official">
+        <div class="panel-head">
+          <h2>Preview — Current official paper style</h2>
+          <p>Dense, paper-faithful on-screen form (simplified mock of present look).</p>
+        </div>
+        <div class="paper-dense">
+          <div class="dense-title">INDIVIDUAL TREATMENT RECORD</div>
+          <div class="dense-grid">
+            <div class="dense-cell"><span>Last Name</span><b>____________</b></div>
+            <div class="dense-cell"><span>First Name</span><b>____________</b></div>
+            <div class="dense-cell"><span>Sex</span><b>☐ F ☐ M</b></div>
+            <div class="dense-cell"><span>Birth Date</span><b>__/__/____</b></div>
+            <div class="dense-cell wide"><span>Chief Complaints</span><b>________________________________</b></div>
+            <div class="dense-cell wide"><span>Diagnosis</span><b>________________________________</b></div>
+            <div class="dense-cell wide"><span>Medication / Treatment</span><b>________________________________</b></div>
+          </div>
+          <p class="dense-foot">Same 7 Official RHU Forms pages as now — dense look is what panel called heavy on screen.</p>
+        </div>
+      </div>
+
+      <!-- SCREEN: Clean guided — same 7 official form pages -->
+      <div class="panel panel-screen" id="panelClean" data-style-panel="clean" hidden>
+        <div class="panel-head">
+          <h2>Preview — Clean guided form</h2>
+          <p>Same Official RHU Forms list as today. Cleaner layout only — pages &amp; print unchanged.</p>
+        </div>
+
+        <div class="clean-workspace">
+          <nav class="form-nav" aria-label="Official RHU Forms">
+            <div class="form-nav-head">
+              <span class="form-nav-icon" aria-hidden="true"></span>
+              <strong>OFFICIAL RHU FORMS</strong>
+            </div>
+            <ol class="form-nav-list" id="formNavList">
+              <li>
+                <button type="button" class="form-nav-item is-active" data-form="pcsf" data-step="1">
+                  <span class="num">1</span>
+                  <span class="label">PhilHealth Primary Care Selection Form (PCSF)</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="form-nav-item" data-form="itr" data-step="2">
+                  <span class="num">2</span>
+                  <span class="label">Individual Treatment Record</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="form-nav-item" data-form="enrollment" data-step="3">
+                  <span class="num">3</span>
+                  <span class="label">Patient Enrollment Record</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="form-nav-item" data-form="history" data-step="4">
+                  <span class="num">4</span>
+                  <span class="label">Past Medical / Surgical / Family History</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="form-nav-item" data-form="social" data-step="5">
+                  <span class="num">5</span>
+                  <span class="label">Personal / Social History, NCD &amp; Photo Consent</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="form-nav-item" data-form="ekas" data-step="6">
+                  <span class="num">6</span>
+                  <span class="label">Electronic Konsulta Availment Slip (EKAS)</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="form-nav-item" data-form="epress" data-step="7">
+                  <span class="num">7</span>
+                  <span class="label">Electronic Prescription Slip (EPRESS)</span>
+                </button>
+              </li>
+            </ol>
+          </nav>
+
+          <article class="clean-card" id="cleanFormCard">
+            <header>
+              <p class="step-label" id="cleanStepLabel">Form 1 of 7</p>
+              <h3 id="cleanFormTitle">PhilHealth Primary Care Selection Form (PCSF)</h3>
+              <p class="help" id="cleanFormHelp">Same PCSF page as current system — spaced fields for easier encoding.</p>
+            </header>
+
+            <div class="fields" id="cleanFormFields">
+              <!-- filled by preview.js per form page -->
+            </div>
+
+            <footer class="clean-actions">
+              <button type="button" class="btn-ghost" id="btnPrevForm">Previous form</button>
+              <button type="button" class="btn-primary" id="btnNextForm">Save &amp; Next form</button>
+            </footer>
+          </article>
+        </div>
+      </div>
+
+      <!-- PRINT: always official -->
+      <div class="panel panel-print" id="panelPrint" hidden>
+        <div class="panel-head">
+          <h2>Print output — same as today</h2>
+          <p>Regardless of Admin screen style, printed forms keep the existing official layout.</p>
+        </div>
+        <div class="print-sheet">
+          <div class="print-badge">OFFICIAL PRINT (unchanged)</div>
+          <h3>INDIVIDUAL TREATMENT RECORD</h3>
+          <p class="print-sub">Integrated Clinic Information System (iCLINICSYS) · DOH Form 2 look</p>
+          <table>
+            <tr>
+              <td>Last Name<br /><strong>sample only</strong></td>
+              <td>First Name<br /><strong>sample only</strong></td>
+              <td>Sex<br /><strong>—</strong></td>
+            </tr>
+            <tr>
+              <td colspan="3">Chief Complaints<br /><strong>_______________________________</strong></td>
+            </tr>
+            <tr>
+              <td colspan="3">Diagnosis / Medication<br /><strong>_______________________________</strong></td>
+            </tr>
+          </table>
+          <p class="print-note">
+            Encoding UI can be Clean Guided; printer still receives the current official paper template.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-foot">
+    Standalone mockup folder: <code>mockups/form-style-choices/</code> · Not wired to Admin or encoding modules.
+    · <a href="implement-preview.html"><strong>Full encoding design (what we would implement)</strong></a>
+  </footer>
+
+  <script src="preview.js"></script>
+</body>
+</html>

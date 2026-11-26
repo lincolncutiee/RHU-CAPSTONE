@@ -46,33 +46,41 @@ foreach ($rows as $r) {
             'view_url' => $r['view_url'],
         ];
     }
-    $patientGroups[$patientKey]['medicines'][(string) $r['medicine']] = true;
+    $medNames = array_keys($r['medicines'] ?? []);
+    if ($medNames === [] && !empty($r['medicine'])) {
+        $medNames = [(string) $r['medicine']];
+    }
+    foreach ($medNames as $medName) {
+        $patientGroups[$patientKey]['medicines'][(string) $medName] = true;
+    }
     if ((int) ($r['dispensed_sort_ts'] ?? 0) >= $patientGroups[$patientKey]['sort']) {
         $patientGroups[$patientKey]['sort'] = (int) $r['dispensed_sort_ts'];
         $patientGroups[$patientKey]['last'] = $r['dispensed_at'];
         $patientGroups[$patientKey]['view_url'] = $r['view_url'];
     }
 
-    $medKey = (string) ($r['medicine'] ?? '');
-    if ($medKey === '') {
-        $medKey = '—';
-    }
-    if (!isset($medicineGroups[$medKey])) {
-        $medicineGroups[$medKey] = [
-            'medicine' => $medKey,
-            'brand' => (string) ($r['brand'] ?? ''),
-            'form' => (string) ($r['form'] ?? '—'),
-            'patients' => [],
-            'lines' => 0,
-            'last' => $r['dispensed_at'],
-            'sort' => (int) ($r['dispensed_sort_ts'] ?? 0),
-        ];
-    }
-    $medicineGroups[$medKey]['patients'][$patientKey] = true;
-    $medicineGroups[$medKey]['lines']++;
-    if ((int) ($r['dispensed_sort_ts'] ?? 0) >= $medicineGroups[$medKey]['sort']) {
-        $medicineGroups[$medKey]['sort'] = (int) $r['dispensed_sort_ts'];
-        $medicineGroups[$medKey]['last'] = $r['dispensed_at'];
+    foreach ($medNames as $medKey) {
+        $medKey = (string) $medKey;
+        if ($medKey === '') {
+            $medKey = '—';
+        }
+        if (!isset($medicineGroups[$medKey])) {
+            $medicineGroups[$medKey] = [
+                'medicine' => $medKey,
+                'brand' => (string) ($r['brand'] ?? ''),
+                'form' => (string) ($r['form'] ?? '—'),
+                'patients' => [],
+                'lines' => 0,
+                'last' => $r['dispensed_at'],
+                'sort' => (int) ($r['dispensed_sort_ts'] ?? 0),
+            ];
+        }
+        $medicineGroups[$medKey]['patients'][$patientKey] = true;
+        $medicineGroups[$medKey]['lines']++;
+        if ((int) ($r['dispensed_sort_ts'] ?? 0) >= $medicineGroups[$medKey]['sort']) {
+            $medicineGroups[$medKey]['sort'] = (int) $r['dispensed_sort_ts'];
+            $medicineGroups[$medKey]['last'] = $r['dispensed_at'];
+        }
     }
 }
 $uniquePatients = count($patientGroups);
@@ -113,10 +121,10 @@ $splitDispensedAt = static function (string $display): array {
 };
 
 $pageTitle = 'Dispensed Medicines';
-$pageSubtitle = 'Medicines recorded as dispensed — one row per prescribed item';
+$pageSubtitle = 'Medicines recorded as dispensed — one row per consultation';
 $activePage = 'pharmacy-dispensed';
 $hidePageTitleBar = true;
-$extraCSS = [BASE_URL . '/assets/css/pharmacy.css?v=6'];
+$extraCSS = [BASE_URL . '/assets/css/pharmacy.css?v=7'];
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -309,10 +317,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <tr>
                             <th>Date dispensed</th>
                             <th>Patient</th>
-                            <th>Medicine</th>
-                            <th>Dose</th>
-                            <th>Form</th>
-                            <th class="text-center">Qty</th>
+                            <th>Medication / Prescription</th>
                             <?php if ($scope === 'all'): ?>
                             <th>Dispensed by</th>
                             <?php endif; ?>
@@ -322,8 +327,8 @@ require_once __DIR__ . '/../includes/header.php';
                     <tbody>
                         <?php foreach ($rows as $r):
                             [$datePart, $timePart] = $splitDispensedAt((string) ($r['dispensed_at'] ?? ''));
-                            $dose = (string) ($r['dose'] ?? '—');
-                            $doseMissing = $dose === '' || $dose === '—';
+                            $prescription = trim((string) ($r['prescription'] ?? ''));
+                            $prescriptionMissing = $prescription === '' || $prescription === '—';
                         ?>
                         <tr>
                             <td>
@@ -341,31 +346,12 @@ require_once __DIR__ . '/../includes/header.php';
                                     </div>
                                 </div>
                             </td>
-                            <td>
-                                <span class="ph-med-line">
-                                    <i class="bi bi-capsule-pill" aria-hidden="true"></i>
-                                    <span>
-                                        <span class="ph-med-generic"><?= htmlspecialchars($r['medicine']) ?></span>
-                                        <?php if ($r['brand'] !== ''): ?>
-                                        <span class="ph-sub d-block"><?= htmlspecialchars($r['brand']) ?></span>
-                                        <?php endif; ?>
-                                    </span>
-                                </span>
-                            </td>
-                            <td>
-                                <?php if ($doseMissing): ?>
-                                <span class="ph-dose-missing" title="Not set on medication master">Not specified</span>
+                            <td class="ph-prescription-cell">
+                                <?php if ($prescriptionMissing): ?>
+                                <span class="ph-dose-missing">No prescription notes</span>
                                 <?php else: ?>
-                                <?= htmlspecialchars($dose) ?>
+                                <div class="ph-prescription-text"><?= htmlspecialchars($prescription) ?></div>
                                 <?php endif; ?>
-                            </td>
-                            <td>
-                                <span class="ph-form-tag"><?= htmlspecialchars($r['form']) ?></span>
-                            </td>
-                            <td class="text-center">
-                                <span class="ph-qty-pill" title="<?= htmlspecialchars($r['quantity_note']) ?>">
-                                    <?= htmlspecialchars($r['quantity']) ?>
-                                </span>
                             </td>
                             <?php if ($scope === 'all'): ?>
                             <td class="ph-sub"><?= htmlspecialchars($r['dispensed_by']) ?></td>

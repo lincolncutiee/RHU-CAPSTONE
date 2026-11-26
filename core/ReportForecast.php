@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/ClinicalMaster.php';
+require_once __DIR__ . '/HeatMap.php';
 require_once __DIR__ . '/PatientSearch.php';
 require_once __DIR__ . '/ReportFilters.php';
 
@@ -19,7 +20,7 @@ class ReportForecast
 
     public static function normalizeHorizon(int $days): int
     {
-        if ($days === 14 || $days === 30) {
+        if ($days === 14 || $days === 30 || $days === 90) {
             return $days;
         }
 
@@ -147,17 +148,19 @@ class ReportForecast
         $from = date('Y-m-d', strtotime('-' . (self::HISTORY_DAYS - 1) . ' days', strtotime($to)));
 
         $dailyByDisease = self::dailyDiagnosisCounts($conn, $from, $to, $filters);
-        $diseaseOptions = self::diseaseOptionsFromCounts($dailyByDisease);
+        $activeDiseaseNames = self::activeDiseaseNames($conn, $from, $to, $filters, $dailyByDisease);
+        $diseaseOptions = self::diseaseOptionsFromCounts($dailyByDisease, $activeDiseaseNames);
         $selectedDisease = self::resolveSelectedDisease($disease, $diseaseOptions, $dailyByDisease, $to);
 
         $byDay = [];
         if ($selectedDisease === '' || $selectedDisease === 'all') {
-            foreach ($dailyByDisease as $series) {
+            foreach ($activeDiseaseNames as $name) {
+                $series = $dailyByDisease[$name] ?? [];
                 foreach ($series as $day => $count) {
                     $byDay[$day] = ($byDay[$day] ?? 0) + (int) $count;
                 }
             }
-            $selectedLabel = 'All recorded diseases';
+            $selectedLabel = 'All active diseases';
         } else {
             $byDay = $dailyByDisease[$selectedDisease] ?? [];
             $selectedLabel = $selectedDisease;
@@ -248,32 +251,105 @@ class ReportForecast
     }
 
     /**
+     * Diseases that currently have Heat Map–style active cases (count > 0).
+     * Falls back to any recorded disease in-range when the active set is empty.
+     *
      * @param array<string, array<string, int>> $dailyByDisease
-     * @return list<array{value:string,label:string}>
+     * @return list<string>
      */
-    public static function diseaseOptionsFromCounts(array $dailyByDisease): array
-    {
-        $names = array_keys($dailyByDisease);
-        natcasesort($names);
-        $names = array_values($names);
+    public static function activeDiseaseNames(
+        mysqli $conn,
+        string $from,
+        string $to,
+        ReportFilters $filters,
+        array $dailyByDisease = [],
+    ): array {
+        $payload = HeatMap::build($conn, $from, $to, null, $filters);
+        $names = [];
+        foreach ($payload['diseases'] ?? [] as $d) {
+            if ((int) ($d['count'] ?? 0) <= 0) {
+                continue;
+            }
+            $name = trim((string) ($d['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $names[$name] = true;
+        }
 
-        $options = [['value' => 'all', 'label' => 'All diseases']];
-        $added = [];
-
-        foreach (self::PRIORITY_DISEASES as $priority) {
-            foreach ($names as $name) {
-                if (stripos($name, $priority) !== false && !isset($added[$name])) {
-                    $options[] = ['value' => $name, 'label' => $name];
-                    $added[$name] = true;
+        if ($names === [] && $dailyByDisease !== []) {
+            foreach ($dailyByDisease as $name => $series) {
+                $total = 0;
+                foreach ($series as $count) {
+                    $total += (int) $count;
+                }
+                if ($total > 0) {
+                    $names[(string) $name] = true;
                 }
             }
         }
 
-        foreach ($names as $name) {
-            if (!isset($added[$name])) {
-                $options[] = ['value' => $name, 'label' => $name];
-                $added[$name] = true;
+        $list = array_keys($names);
+        natcasesort($list);
+
+        return array_values($list);
+    }
+
+    /**
+     * @param array<string, array<string, int>> $dailyByDisease
+     * @param list<string>|null $activeNames Only diseases with active cases when provided
+     * @return list<array{value:string,label:string,count?:int}>
+     */
+    public static function diseaseOptionsFromCounts(array $dailyByDisease, ?array $activeNames = null): array
+    {
+        if ($activeNames !== null) {
+            $allow = [];
+            foreach ($activeNames as $name) {
+                $allow[(string) $name] = true;
             }
+            $names = array_values(array_filter(
+                array_keys($dailyByDisease),
+                static fn ($name) => isset($allow[(string) $name])
+            ));
+            // Include active Heat Map diseases even if name casing differs in daily series.
+            foreach ($activeNames as $name) {
+                if (!in_array($name, $names, true)) {
+                    foreach (array_keys($dailyByDisease) as $recorded) {
+                        if (strcasecmp((string) $recorded, (string) $name) === 0) {
+                            $names[] = (string) $recorded;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            $names = array_keys($dailyByDisease);
+        }
+
+        $totals = [];
+        foreach ($names as $name) {
+            $total = 0;
+            foreach ($dailyByDisease[$name] ?? [] as $count) {
+                $total += (int) $count;
+            }
+            if ($total > 0) {
+                $totals[$name] = $total;
+            }
+        }
+
+        // Highest active case count first, then name.
+        uksort($totals, static function (string $a, string $b) use ($totals): int {
+            $cmp = $totals[$b] <=> $totals[$a];
+            return $cmp !== 0 ? $cmp : strnatcasecmp($a, $b);
+        });
+
+        $options = [['value' => 'all', 'label' => 'All active diseases']];
+        foreach ($totals as $name => $total) {
+            $options[] = [
+                'value' => $name,
+                'label' => $name . ' (' . $total . ')',
+                'count' => $total,
+            ];
         }
 
         return $options;

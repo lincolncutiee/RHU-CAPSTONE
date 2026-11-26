@@ -369,6 +369,11 @@
     color: #92400e;
 }
 
+.itd-badge--draft {
+    background: #f1f5f9;
+    color: #475569;
+}
+
 .itd-badge--ready {
     background: #dbeafe;
     color: #1d4ed8;

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mockup — Clean form inside RHU chrome</title>
+  <link rel="stylesheet" href="implement-preview.css" />
+</head>
+<body>
+  <div class="mock-strip">
+    <strong>MOCKUP</strong> — surrounding = current RHU system · center ra ang atong clean form ·
+    <a href="index.html">← Admin style choices</a>
+  </div>
+
+  <div class="app-shell">
+    <!-- Same chrome as current RHUWEB topnav -->
+    <header class="rhu-topnav">
+      <a class="brand" href="#">
+        <img src="../../assets/img/rhu-magallanes-logo.png" alt="" width="36" height="36" onerror="this.style.display='none'" />
+        <span>
+          <strong>RHU MAGALLANES</strong>
+          <small>Agusan del Norte</small>
+        </span>
+      </a>
+      <nav class="top-links" aria-label="Main">
+        <a href="#">Dashboard</a>
+        <a href="#" class="is-active">Patient Encoding</a>
+        <a href="#">Patient Records</a>
+        <a href="#">Review Queue</a>
+        <a href="#">Print <span class="badge">1</span></a>
+        <a href="#">Reports ▾</a>
+      </nav>
+      <div class="top-user">
+        <span class="bell" aria-hidden="true">🔔</span>
+        <div>
+          <strong>Cyrill Clark D. Vega</strong>
+          <small>IT Department</small>
+        </div>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <!-- Same Official RHU Forms sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <button type="button" class="burger" aria-label="Toggle">☰</button>
+          <strong>OFFICIAL RHU FORMS</strong>
+        </div>
+        <nav class="nav" id="formNav">
+          <button type="button" class="nav-item is-active" data-page="pcsf"><span class="n">1</span><span class="t">PhilHealth Primary Care Selection Form (PCSF)</span></button>
+          <button type="button" class="nav-item" data-page="itr"><span class="n">2</span><span class="t">Individual Treatment Record</span></button>
+          <button type="button" class="nav-item" data-page="enrollment"><span class="n">3</span><span class="t">Patient Enrollment Record</span></button>
+          <button type="button" class="nav-item" data-page="history"><span class="n">4</span><span class="t">Past Medical / Surgical / Family History</span></button>
+          <button type="button" class="nav-item" data-page="social"><span class="n">5</span><span class="t">Personal / Social History, NCD &amp; Photo Consent</span></button>
+          <button type="button" class="nav-item" data-page="ekas"><span class="n">6</span><span class="t">Electronic Konsulta Availment Slip (EKAS)</span></button>
+          <button type="button" class="nav-item" data-page="epress"><span class="n">7</span><span class="t">Electronic Prescription Slip (EPRESS)</span></button>
+        </nav>
+        <div class="legend">
+          <span><i class="done"></i> Completed</span>
+          <span><i class="cur"></i> Current</span>
+          <span><i class="miss"></i> Incomplete</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <!-- ONLY this center area is replaced by our clean guided form -->
+        <div class="stage">
+          <button type="button" class="side-btn side-prev" id="sidePrev" title="Back" aria-label="Previous section" disabled>
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
+
+          <div class="scroll">
+            <section class="page is-active" data-page="pcsf" data-stepped="1">
+              <div class="step-rail" aria-label="PCSF sections">
+                <span class="step-dot is-active" data-goto="0">1 · Beneficiary</span>
+                <span class="step-dot" data-goto="1">2 · PCC choices</span>
+                <span class="step-dot" data-goto="2">3 · Transfer</span>
+                <span class="step-dot" data-goto="3">4 · Confirm</span>
+              </div>
+
+              <div class="section step-pane is-active" data-step="0">
+                <h2>Beneficiary information</h2>
+                <p class="section-help">To be filled-out by the beneficiary — same PCSF fields as today.</p>
+                <div class="row radios">
+                  <label class="chip"><input type="radio" name="member" checked /> Member</label>
+                  <label class="chip"><input type="radio" name="member" /> Dependent</label>
+                </div>
+                <div class="grid-2">
+                  <label class="field"><span>PIN</span><input type="text" placeholder="12-345678901-2" /></label>
+                  <label class="field"><span>Date</span><input type="date" value="2026-11-25" /></label>
+                </div>
+                <div class="grid-3">
+                  <label class="field"><span>Last name</span><input type="text" /></label>
+                  <label class="field"><span>First name</span><input type="text" /></label>
+                  <label class="field"><span>Middle name</span><input type="text" /></label>
+                </div>
+                <div class="grid-3">
+                  <label class="field"><span>Barangay / Town</span><input type="text" value="Magallanes" /></label>
+                  <label class="field"><span>Municipality / City</span><input type="text" value="Cabadbaran City" /></label>
+                  <label class="field"><span>Province</span><input type="text" value="Agusan del Norte" /></label>
+                </div>
+                <div class="grid-2">
+                  <label class="field"><span>Date of birth</span><input type="date" /></label>
+                  <label class="field"><span>Contact number</span><input type="text" /></label>
+                </div>
+                <label class="field"><span>Email address</span><input type="email" placeholder="name@email.com" /></label>
+                <div class="checks">
+                  <label><input type="checkbox" checked /> Register to a Primary Care Clinic (PCC)</label>
+                  <label><input type="checkbox" /> Register all declared minor dependents</label>
+                </div>
+              </div>
+
+              <div class="section step-pane" data-step="1" hidden>
+                <h2>Primary Care Clinic choices</h2>
+                <p class="section-help">Makita ra ni after Next from Beneficiary.</p>
+                <label class="field"><span>1st choice PCC</span><input type="text" value="RHU Magallanes" /></label>
+                <div class="grid-3">
+                  <label class="field"><span>PCC barangay</span><input type="text" /></label>
+                  <label class="field"><span>Municipality / City</span><input type="text" /></label>
+                  <label class="field"><span>Province</span><input type="text" /></label>
+                </div>
+                <label class="field"><span>2nd choice PCC</span><input type="text" /></label>
+                <div class="grid-3">
+                  <label class="field"><span>PCC barangay</span><input type="text" /></label>
+                  <label class="field"><span>Municipality / City</span><input type="text" /></label>
+                  <label class="field"><span>Province</span><input type="text" /></label>
+                </div>
+              </div>
+
+              <div class="section muted step-pane" data-step="2" hidden>
+                <h2>Transfer <span class="optional">optional</span></h2>
+                <label class="check-one"><input type="checkbox" /> Transfer from previous PCC</label>
+                <label class="field"><span>Previous PCC</span><input type="text" /></label>
+                <label class="field"><span>1st choice PCC (transfer)</span><input type="text" /></label>
+              </div>
+
+              <div class="section step-pane" data-step="3" hidden>
+                <h2>PhilHealth confirmation slip</h2>
+                <p class="section-help">To be filled-out by PhilHealth primary care personnel.</p>
+                <div class="grid-2">
+                  <label class="field"><span>Selection no.</span><input type="text" /></label>
+                  <label class="field"><span>Confirm date</span><input type="date" /></label>
+                </div>
+                <div class="grid-3">
+                  <label class="field"><span>Last name</span><input type="text" /></label>
+                  <label class="field"><span>First name</span><input type="text" /></label>
+                  <label class="field"><span>Middle name</span><input type="text" /></label>
+                </div>
+                <div class="grid-2">
+                  <label class="field"><span>PIN</span><input type="text" /></label>
+                  <label class="field"><span>Date of birth</span><input type="date" /></label>
+                </div>
+                <label class="field"><span>Primary Care Clinic (PC)</span><input type="text" value="RHU Magallanes" /></label>
+              </div>
+            </section>
+
+            <section class="page" data-page="itr" hidden data-stepped="1">
+              <div class="step-rail" aria-label="ITR sections">
+                <span class="step-dot is-active" data-goto="0">1 · Consultation</span>
+                <span class="step-dot" data-goto="1">2 · Vitals</span>
+                <span class="step-dot" data-goto="2">3 · Doctor</span>
+              </div>
+              <div class="section step-pane is-active" data-step="0">
+                <h2>Patient &amp; consultation</h2>
+                <p class="section-help">Same ITR fields — cleaner encoding; printed ITR stays official.</p>
+                <div class="grid-2">
+                  <label class="field"><span>Date of consultation</span><input type="date" value="2026-11-25" /></label>
+                  <label class="field"><span>Mode of transaction</span>
+                    <select><option>Walk-in</option><option>Visited</option><option>Referral</option></select>
+                  </label>
+                </div>
+                <div class="grid-2">
+                  <label class="field"><span>Last name</span><input type="text" /></label>
+                  <label class="field"><span>First name</span><input type="text" /></label>
+                </div>
+                <label class="field"><span>Chief complaints</span><textarea rows="3" placeholder="Main reason for visit…"></textarea></label>
+                <label class="field"><span>Consultation types</span><input type="text" placeholder="e.g. General, NCD…" /></label>
+              </div>
+              <div class="section step-pane" data-step="1" hidden>
+                <h2>Vitals</h2>
+                <div class="grid-4">
+                  <label class="field"><span>BP</span><input type="text" placeholder="120/80" /></label>
+                  <label class="field"><span>Temp</span><input type="text" placeholder="36.5" /></label>
+                  <label class="field"><span>HR</span><input type="text" /></label>
+                  <label class="field"><span>RR</span><input type="text" /></label>
+                </div>
+              </div>
+              <div class="section step-pane" data-step="2" hidden>
+                <h2>Doctor assessment</h2>
+                <label class="field"><span>Diagnosis</span><textarea rows="3"></textarea></label>
+                <label class="field"><span>Medication / treatment</span><textarea rows="3"></textarea></label>
+              </div>
+            </section>
+
+            <section class="page" data-page="enrollment" hidden>
+              <div class="section">
+                <h2>Patient enrollment</h2>
+                <p class="section-help">Same PER fields — clean layout only.</p>
+                <div class="grid-3">
+                  <label class="field"><span>Last name</span><input type="text" /></label>
+                  <label class="field"><span>First name</span><input type="text" /></label>
+                  <label class="field"><span>Middle name</span><input type="text" /></label>
+                </div>
+                <div class="grid-3">
+                  <label class="field"><span>Sex</span><select><option>Female</option><option>Male</option></select></label>
+                  <label class="field"><span>Birth date</span><input type="date" /></label>
+                  <label class="field"><span>Civil status</span><select><option>Single</option><option>Married</option><option>Widowed</option></select></label>
+                </div>
+                <div class="grid-3">
+                  <label class="field"><span>Barangay</span><input type="text" /></label>
+                  <label class="field"><span>Municipality</span><input type="text" /></label>
+                  <label class="field"><span>Province</span><input type="text" /></label>
+                </div>
+                <label class="field"><span>Contact number</span><input type="text" /></label>
+              </div>
+            </section>
+
+            <section class="page" data-page="history" hidden>
+              <div class="section">
+                <h2>Past medical / surgical / family history</h2>
+                <label class="field"><span>Past medical history</span><textarea rows="4"></textarea></label>
+                <label class="field"><span>Past surgical history</span><textarea rows="3"></textarea></label>
+                <label class="field"><span>Family history</span><textarea rows="3"></textarea></label>
+              </div>
+            </section>
+
+            <section class="page" data-page="social" hidden>
+              <div class="section">
+                <h2>Personal / social history</h2>
+                <div class="grid-2">
+                  <label class="field"><span>Smoking</span><select><option>Never</option><option>Former</option><option>Current</option></select></label>
+                  <label class="field"><span>Alcohol</span><select><option>Never</option><option>Occasional</option><option>Regular</option></select></label>
+                </div>
+                <label class="field"><span>NCD risk notes</span><textarea rows="3"></textarea></label>
+                <label class="field"><span>Photo consent</span><select><option>Yes</option><option>No</option></select></label>
+              </div>
+            </section>
+
+            <section class="page" data-page="ekas" hidden>
+              <div class="section">
+                <h2>Electronic Konsulta Availment Slip (EKAS)</h2>
+                <div class="grid-2">
+                  <label class="field"><span>Availment date</span><input type="date" value="2026-11-25" /></label>
+                  <label class="field"><span>Service availed</span><input type="text" value="Consultation" /></label>
+                </div>
+                <label class="field"><span>Provider / facility</span><input type="text" value="RHU Magallanes" /></label>
+                <label class="field"><span>Remarks</span><textarea rows="3"></textarea></label>
+              </div>
+            </section>
+
+            <section class="page" data-page="epress" hidden>
+              <div class="section">
+                <h2>Electronic Prescription Slip (EPRESS)</h2>
+                <label class="field"><span>Medicine / generic name</span><input type="text" /></label>
+                <div class="grid-2">
+                  <label class="field"><span>Dosage / frequency</span><input type="text" placeholder="1 tab BID" /></label>
+                  <label class="field"><span>Quantity</span><input type="text" /></label>
+                </div>
+                <label class="field"><span>Instructions</span><textarea rows="3" placeholder="Take after meals…"></textarea></label>
+              </div>
+            </section>
+          </div>
+
+          <button type="button" class="side-btn side-next" id="sideNext" title="Next" aria-label="Next section">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          </button>
+        </div>
+
+        <!-- Same footer chrome as current encoding -->
+        <footer class="form-footer">
+          <button type="button" class="btn ghost" id="btnPrev">← Previous</button>
+          <div class="footer-mid">
+            <button type="button" class="btn soft">💾 Save Draft</button>
+            <button type="button" class="btn primary" id="btnNext">🩺 Send to Doctor</button>
+          </div>
+          <span class="page-of" id="pageOf">Page 1 of 7</span>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script src="implement-preview.js"></script>
+</body>
+</html>

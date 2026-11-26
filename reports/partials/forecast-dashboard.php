@@ -56,7 +56,7 @@ $trendCode = preg_replace('/[^a-z_]/', '', strtolower((string) ($fcSummary['tren
             <div>
                 <h2 class="fc-panel__title">Historical vs. Forecasted Disease Cases</h2>
                 <p class="fc-panel__sub">
-                    <?= htmlspecialchars((string) ($forecastDash['disease_label'] ?? 'All recorded diseases')) ?>
+                    <?= htmlspecialchars((string) ($forecastDash['disease_label'] ?? 'All active diseases')) ?>
                     · <?= $forecastInterval === 'monthly' ? 'Monthly' : 'Weekly' ?>
                     · OLS linear regression
                 </p>

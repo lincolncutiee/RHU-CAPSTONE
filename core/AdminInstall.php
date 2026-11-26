@@ -6,21 +6,28 @@
 class AdminInstall
 {
     private static bool $done = false;
+    private static ?bool $hasCanAccessAdmin = null;
+    private static ?bool $hasFormDisplayStyle = null;
 
     public static function hasCanAccessAdminColumn(mysqli $conn): bool
     {
+        if (self::$hasCanAccessAdmin !== null) {
+            return self::$hasCanAccessAdmin;
+        }
         $col = $conn->query("SHOW COLUMNS FROM users LIKE 'can_access_admin'");
         if (!$col) {
+            self::$hasCanAccessAdmin = false;
             return false;
         }
-        $ok = $col->num_rows > 0;
+        self::$hasCanAccessAdmin = $col->num_rows > 0;
         $col->free();
-        return $ok;
+        return self::$hasCanAccessAdmin;
     }
 
     public static function ensureSchema(mysqli $conn): void
     {
-        if (self::$done && self::hasCanAccessAdminColumn($conn)) {
+        // Once per PHP request — avoid repeated CREATE/SHOW/UPDATE on every page include
+        if (self::$done) {
             return;
         }
 
@@ -28,6 +35,7 @@ class AdminInstall
             @$conn->query(
                 'ALTER TABLE users ADD COLUMN can_access_admin TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active'
             );
+            self::$hasCanAccessAdmin = true;
         }
 
         $conn->query(
@@ -64,6 +72,21 @@ class AdminInstall
             ) ENGINE=InnoDB"
         );
         $conn->query('INSERT IGNORE INTO system_branding (id) VALUES (1)');
+        if (self::$hasFormDisplayStyle === null) {
+            $styleCol = $conn->query("SHOW COLUMNS FROM system_branding LIKE 'form_display_style'");
+            self::$hasFormDisplayStyle = $styleCol && $styleCol->num_rows > 0;
+            if ($styleCol) {
+                $styleCol->free();
+            }
+        }
+        if (self::$hasFormDisplayStyle === false) {
+            $conn->query(
+                "ALTER TABLE system_branding
+                 ADD COLUMN form_display_style VARCHAR(20) NOT NULL DEFAULT 'official'
+                 AFTER facility_name"
+            );
+            self::$hasFormDisplayStyle = true;
+        }
 
         $conn->query(
             "CREATE TABLE IF NOT EXISTS access_logs (

@@ -366,6 +366,7 @@ class Pharmacy
                        tr.patient_id AS patient_db_id,
                        tr.date_of_consultation,
                        tr.it_data,
+                       tr.medication_treatment,
                        p.patient_id AS pin,
                        p.first_name,
                        p.middle_name,
@@ -391,9 +392,10 @@ class Pharmacy
                 OR p.last_name LIKE ?
                 OR mm.generic_name LIKE ?
                 OR mm.brand_name LIKE ?
+                OR tr.medication_treatment LIKE ?
             )';
-            $types .= 'sssss';
-            array_push($params, $like, $like, $like, $like, $like);
+            $types .= 'ssssss';
+            array_push($params, $like, $like, $like, $like, $like, $like);
         }
 
         $sql .= ' ORDER BY tr.id DESC, cm.id ASC LIMIT 800';
@@ -407,7 +409,8 @@ class Pharmacy
         $raw = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
         $stmt->close();
 
-        $rows = [];
+        /** @var array<int, array<string, mixed>> $byConsult */
+        $byConsult = [];
         foreach ($raw as $row) {
             $pharmacy = self::parsePharmacyMeta($row['it_data'] ?? null);
             $dispensedAt = trim((string) ($pharmacy['dispensed_at'] ?? ''));
@@ -420,6 +423,7 @@ class Pharmacy
                 continue;
             }
 
+            $cid = (int) $row['consultation_id'];
             $ts = strtotime($dispensedAt);
             $dispensedDisplay = $ts ? date('M d, Y g:i A', $ts) : $dispensedAt;
             $sortTs = $ts ?: 0;
@@ -428,30 +432,40 @@ class Pharmacy
             $formal = trim(($row['last_name'] ?? '') . ', ' . ($row['first_name'] ?? ''))
                 . ($middle !== '' ? ' ' . $middle : '');
 
-            $dose = trim((string) ($row['strength'] ?? ''));
-            if ($dose === '') {
-                $dose = '—';
+            $prescription = trim((string) ($row['medication_treatment'] ?? ''));
+            $medicine = trim((string) ($row['generic_name'] ?? ''));
+            $brand = trim((string) ($row['brand_name'] ?? ''));
+            $form = trim((string) ($row['dosage_form'] ?? '')) ?: '—';
+
+            if (!isset($byConsult[$cid])) {
+                $byConsult[$cid] = [
+                    'consultation_id'   => $cid,
+                    'patient_db_id'     => (int) $row['patient_db_id'],
+                    'pin'               => $row['pin'] ?? '—',
+                    'patient_name'      => $formal !== ',' ? $formal : '—',
+                    'medicine'          => $medicine,
+                    'brand'             => $brand,
+                    'form'              => $form,
+                    'medicines'         => [],
+                    'prescription'      => $prescription !== '' ? $prescription : '—',
+                    'dispensed_at'      => $dispensedDisplay,
+                    'dispensed_sort_ts' => $sortTs,
+                    'dispensed_by'      => trim((string) ($pharmacy['dispensed_by_name'] ?? '')) ?: '—',
+                    'view_url'          => BASE_URL . '/pharmacy/dispense.php?id=' . (int) $row['patient_db_id']
+                        . '&consultation_id=' . $cid,
+                ];
             }
 
-            $rows[] = [
-                'consultation_id'   => (int) $row['consultation_id'],
-                'patient_db_id'     => (int) $row['patient_db_id'],
-                'pin'               => $row['pin'] ?? '—',
-                'patient_name'      => $formal !== ',' ? $formal : '—',
-                'medicine'          => trim((string) ($row['generic_name'] ?? '')),
-                'brand'             => trim((string) ($row['brand_name'] ?? '')),
-                'dose'              => $dose,
-                'form'              => trim((string) ($row['dosage_form'] ?? '')) ?: '—',
-                'quantity'          => '1',
-                'quantity_note'     => 'Per prescription line',
-                'dispensed_at'      => $dispensedDisplay,
-                'dispensed_sort_ts' => $sortTs,
-                'dispensed_by'      => trim((string) ($pharmacy['dispensed_by_name'] ?? '')) ?: '—',
-                'view_url'          => BASE_URL . '/pharmacy/dispense.php?id=' . (int) $row['patient_db_id']
-                    . '&consultation_id=' . (int) $row['consultation_id'],
-            ];
+            if ($medicine !== '') {
+                $byConsult[$cid]['medicines'][$medicine] = true;
+            }
+            if ($sortTs >= (int) ($byConsult[$cid]['dispensed_sort_ts'] ?? 0)) {
+                $byConsult[$cid]['dispensed_sort_ts'] = $sortTs;
+                $byConsult[$cid]['dispensed_at'] = $dispensedDisplay;
+            }
         }
 
+        $rows = array_values($byConsult);
         usort($rows, static fn($a, $b) => ($b['dispensed_sort_ts'] ?? 0) <=> ($a['dispensed_sort_ts'] ?? 0));
 
         return $rows;

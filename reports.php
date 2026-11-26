@@ -187,6 +187,7 @@ require_once __DIR__ . '/includes/header.php';
                             <option value="7"<?= $forecastDays === 7 ? ' selected' : '' ?>>Next 7 Days</option>
                             <option value="14"<?= $forecastDays === 14 ? ' selected' : '' ?>>Next 14 Days</option>
                             <option value="30"<?= $forecastDays === 30 ? ' selected' : '' ?>>Next 30 Days</option>
+                            <option value="90"<?= $forecastDays === 90 ? ' selected' : '' ?>>Next 3 Months</option>
                         </select>
                     </label>
                     <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-arrow-repeat"></i> Update</button>

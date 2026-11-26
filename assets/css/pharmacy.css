@@ -670,6 +670,19 @@ a.ph-stat-pill.is-active {
     color: #94a3b8;
 }
 
+.ph-prescription-cell {
+    max-width: 22rem;
+    vertical-align: top;
+}
+
+.ph-prescription-text {
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: #334155;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .ph-action-btn--view {
     border-radius: 10px;
     font-weight: 600;
